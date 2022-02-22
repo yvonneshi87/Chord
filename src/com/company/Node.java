@@ -3,6 +3,8 @@ package com.company;
 public class Node {
     private static final int M = 3;
     private int id;
+    private String ip;
+    private int port;
     private int[] fingerTable;
     private int predecessor;
     private int[] successors;
