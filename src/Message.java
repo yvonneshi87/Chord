@@ -1,5 +1,3 @@
-package com.company;
-
 import java.net.DatagramSocket;
 
 public class Message {
