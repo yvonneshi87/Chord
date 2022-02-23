@@ -5,9 +5,9 @@ public class Node {
     private int id;
     private String ip;
     private int port;
-    private int[] fingerTable;
-    private int predecessor;
-    private int[] successors;
+    private Node[] fingerTable;
+    private Node predecessor;
+    private Node[] successors;
 
     public Node(String port, String ip, int insertedId) {
         setId();
@@ -25,9 +25,9 @@ public class Node {
     }
 
     // join a Chord ring containing node n'
-    private void join(int insertedId) {
+    private void join(Node existingNode) {
         // id = -1 means null node
-        predecessor = -1;
+        predecessor = null;
         findSuccessors(id);
     }
 
@@ -36,27 +36,23 @@ public class Node {
     }
 
     private void findSuccessors(int id) {
-        successors = new int[3];
+        successors = new Node[3];
         for (int i = 0; i < 3; i++) {
             successors[i] = findSuccessor(id);
         }
     }
     private void createFingerTable() {
-        fingerTable = new int[M];
+        fingerTable = new Node[M];
         // implement
     }
 
-    public int findSuccessor(int id) {
+    public Node findSuccessor(int id) {
         // implement
-        return 0;
+        return null;
     }
 
     // search the local table for the highest predecessor of id
-    public int closestPrecedingNode(int id) {
-        return 0;
+    public Node closestPrecedingNode(int id) {
+        return null;
     }
-
-
-
-
 }
