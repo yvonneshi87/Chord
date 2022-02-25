@@ -7,7 +7,7 @@ public class Message {
   }
   
   // Ask targetNode to run findSuccessor(id), return the successor node
-  public static Node requestFindSuccessor(int id, Node targetNode) {
+  public static Node requestFindSuccessor(long id, Node targetNode) {
     return null;
   }
 
@@ -21,9 +21,9 @@ public class Message {
 
   }
 
-  // Ping targetNode to see if it is alive (return 0: OK. otherwise: failed)
-  public static int requestPing(Node targetNode) {
-    return 0;
+  // Ping targetNode to see if it is alive (return true: OK. false: failed)
+  public static boolean requestPing(Node targetNode) {
+    return true;
   }
 
   // Receive one incoming message, parse it, and run the corresponding method on selfNode 
