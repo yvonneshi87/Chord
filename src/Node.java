@@ -13,6 +13,7 @@ public class Node {
     private ServerSocket server;
     private boolean active;
 
+
     public Node(InetSocketAddress isa) {
         this.isa = isa;
         id = Util.hashIsa(isa);

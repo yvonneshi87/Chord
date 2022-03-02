@@ -1,6 +1,11 @@
+import java.math.BigInteger;
 import java.net.*;
+import java.security.*;
 
 public class Util {
+
+    private static long[] exponentTable = null;
+    
     public static String[] parseArgsIfNeeded(String[] args) {
         // need implementation
         return null;
@@ -15,7 +20,7 @@ public class Util {
         if (port < 0 || port > 65535) {
             return null;
         }
-        // need implemenation
+        // need implementation
         return new InetSocketAddress(ipAddress, port);
     }
 
@@ -26,8 +31,35 @@ public class Util {
     // peer id between 0 - (2^m - 1)
     // id =
     public static long hashIsa(InetSocketAddress isa) {
-       // need implementation
+        int hc = isa.hashCode();
+        return hashing(hc);
+    }
+
+
+    private static long hashing(int hc){
+//        byte[] byteArr = new byte[];
+//        for (int i = 0; i < 4;i++) {
+//            byteArr[i] = (byte) (i >> (24 - 8 * i));
+//        }
         return 0L;
+    }
+
+    private static String hashing2(String input) {
+
+        MessageDigest md = null;
+        try {
+            md = MessageDigest.getInstance("SHA-1");
+            // not sure if need to reset here
+            byte[] messageDigest = md.digest(input.getBytes());
+            BigInteger no = new BigInteger(1, messageDigest);
+            String hashtext = no.toString(16);
+            while (hashtext.length() < 32) {
+                hashtext = "0" + hashtext;
+            }
+            return hashtext;
+        } catch (NoSuchAlgorithmException e) {
+            e.printStackTrace();
+        }
     }
 
     // check if x is in between low and high on the ring
