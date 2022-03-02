@@ -1,4 +1,7 @@
 import java.net.*;
+import java.net.ServerSocket;
+import java.io.IOException;
+import java.net.Socket;
 
 public class Node {
     private InetSocketAddress isa;
@@ -7,6 +10,8 @@ public class Node {
     private Node predecessor;
     private Node[] successors;
     private int next; // stores the index of the next finger to fix.
+    private ServerSocket server;
+    private boolean active;
 
     public Node(InetSocketAddress isa) {
         this.isa = isa;
@@ -15,6 +20,34 @@ public class Node {
         predecessor = null;
         createSuccessors();
         next = 0;
+        openServer(); // when build a node, it will open the server on the local port.
+    }
+
+    // open server
+    private void openServer(){
+        int port = this.isa.getPort();
+        try{
+            server = new ServerSocket(port);
+        }catch (IOException e){
+            throw new RuntimeException("Can't open server port " + port, e);
+        }
+    }
+
+    // run socket to accept
+    public void runServer(){
+        while(active){
+            Socket communicator = null;
+            try{
+                communicator = this.server.accept();
+            }catch (IOException e) {
+                throw new RuntimeException("Can't accept message ", e);
+            }
+        }
+    }
+
+    // kill the server
+    public void killServer(){
+        this.active = false;
     }
 
     // create a new Chord ring
