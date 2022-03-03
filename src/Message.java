@@ -27,7 +27,7 @@ public class Message {
       out.close();
       socket.close();
 
-      Node retNode = new Node(Util.getInetSocketAddress(retIp, retPort));
+      Node retNode = new Node(retIp, retPort);
       return retNode;
     } catch (Exception e) {
       // TODO Auto-generated catch block

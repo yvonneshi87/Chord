@@ -1,7 +1,10 @@
+import java.math.BigInteger;
 import java.net.*;
 import java.net.ServerSocket;
 import java.io.IOException;
 import java.net.Socket;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 
 public class Node {
     private InetSocketAddress isa;
@@ -12,16 +15,39 @@ public class Node {
     private int next; // stores the index of the next finger to fix.
     private ServerSocket server;
     private boolean active;
+    private String ipAddress;
+    private String portNum;
 
 
-    public Node(InetSocketAddress isa) {
-        this.isa = isa;
-        id = Util.hashIsa(isa);
+    public Node(String ipAddress, String portNum) {
+        this.ipAddress = ipAddress;
+        this.portNum = portNum;
+        isa = Util.getInetSocketAddress(ipAddress, portNum);
+        assignId();
         createFingerTable();
         predecessor = null;
         createSuccessors();
         next = 0;
         openServer(); // when build a node, it will open the server on the local port.
+    }
+
+    // This method hashes (ip address + port number) to 160 bit String
+    // hashText is 160 bits long (= 40 hex digits * 4 bit per hex digit)
+    // truncates hashText to 32 bits
+    // gets peer id between 0 and (2^m - 1) by converting truncatedHashText to a long number
+    private void assignId() {
+        String input = ipAddress + portNum;
+        try {
+            MessageDigest md = MessageDigest.getInstance("SHA-1");
+            byte[] messageDigest = md.digest(input.getBytes());
+            BigInteger no = new BigInteger(1, messageDigest);
+            String hashText = no.toString(16);
+            // NOT SURE IF TRUNCATION IS CORRECT
+            String truncatedHashText = hashText.substring(0, 9);
+            id = Long.parseLong(truncatedHashText, 16);
+        } catch (NoSuchAlgorithmException e) {
+            e.printStackTrace();
+        }
     }
 
     // open server
@@ -138,5 +164,9 @@ public class Node {
 
     public InetSocketAddress getIsa() {
         return isa;
+    }
+
+    public long getId() {
+        return id;
     }
 }

@@ -16,10 +16,12 @@ public class Chord {
 
         try {
             String ipAddress = InetAddress.getLocalHost().getHostAddress();
-            InetSocketAddress isa = Util.getInetSocketAddress(ipAddress, args[0]);
-            Node node = new Node(isa);
-            InetSocketAddress contactIsa = (args.length == 1) ? node.getIsa()
-                    : Util.getInetSocketAddress(args[1], args[2]);
+            String portNum = args[0];
+            // Create a node using ip address and port number
+            Node node = new Node(ipAddress, portNum);
+            InetSocketAddress isa = node.getIsa();
+            Node contactNode = (args.length == 1) ? node : new Node(args[1], args[2]);
+            InetSocketAddress contactIsa = contactNode.getIsa();
             if (contactIsa == null) {
                 System.out.println("Having difficulty finding the contact's isa.");
                 System.exit(0);
