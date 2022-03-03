@@ -36,7 +36,7 @@ public class Node {
     // truncates hashText to 32 bits
     // gets peer id between 0 and (2^m - 1) by converting truncatedHashText to a long number
     private void assignId() {
-        String input = ipAddress + portNum;
+        String input = ipAddress + ":" + portNum;
         try {
             MessageDigest md = MessageDigest.getInstance("SHA-1");
             byte[] messageDigest = md.digest(input.getBytes());
@@ -150,6 +150,14 @@ public class Node {
         // for (int i = 0; i < Chord.NUM_SUCCESSORS; i++) {
         // successors[i] = findSuccessor(id);
         // }
+    }
+
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder();
+        sb.append("*****NODE**INFO*****\n");
+        // TODO
+        return sb.toString();
     }
 
     // Create new finger table array

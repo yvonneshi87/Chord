@@ -8,29 +8,33 @@ public class Chord {
     public static final int TOTAL = 1 << M; // Maximum number of nodes
 
     public static void main(String[] args) {
-        String[] parsedArgs = Util.parseArgsIfNeeded(args);
-        if (parsedArgs == null || parsedArgs.length == 2 || parsedArgs.length > 3) {
-            System.out.println("Fatal error when parsing arguments!");
+        // Get User input and check its validity
+        if (args == null || args.length == 2 || args.length > 3) {
+            System.out.println("Fatal error when parsing arguments! Now exit.");
             System.exit(0);
         }
 
         try {
             String ipAddress = InetAddress.getLocalHost().getHostAddress();
             String portNum = args[0];
-            // Create a node using ip address and port number
+
+            // Construct a Node instance by passing address and port number
             Node node = new Node(ipAddress, portNum);
-            InetSocketAddress isa = node.getIsa();
-            Node contactNode = (args.length == 1) ? node : new Node(args[1], args[2]);
-            InetSocketAddress contactIsa = contactNode.getIsa();
+
+            // Find isa of contact node
+            // If arg len = 1, the contact node is the node itself. So get isa of the current node
+            // If arg len = 3, calculate the isa based on the last two parameters
+            InetSocketAddress contactIsa = (args.length == 1) ? node.getIsa() : Util.getInetSocketAddress(args[1], args[2]);
+
             if (contactIsa == null) {
-                System.out.println("Having difficulty finding the contact's isa.");
+                System.out.println("Fatal error when finding isa of contact node. Now exit.");
                 System.exit(0);
             } else {
                 if (node.join(contactIsa)) {
-                    System.out.println("Joining the Chord");
-                    // need implementation
+                    System.out.println("Joining the Chord ring...");
+                    System.out.println(node);
                 } else {
-                    System.out.println("Having difficulty connecting to the contact node.");
+                    System.out.println("Fatal error when connecting to the contact node. Now exit");
                     System.exit(0);
                 }
             }
