@@ -36,13 +36,10 @@ public class Listener extends Thread {
                 // TODO: CONSTRUCT A SPEAKER
             }catch (IOException e) {
                 // TODO: REWRITE EXCEPTION HANDLER
+                active = false;
                 throw new RuntimeException("Can't accept message ", e);
             }
         }
     }
 
-    // Kill the server
-    public void killServer(){
-        active = false;
-    }
 }

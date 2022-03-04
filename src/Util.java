@@ -1,10 +1,10 @@
+import java.math.BigInteger;
 import java.net.*;
+import java.security.*;
 
 public class Util {
     private static final int M = 32;
     private static final int TOTAL = 1 << M; // Maximum number of nodes
-
-    private static long[] exponentTable = null;
 
     // Construct InetSocketAddress with ip address and port number
     public static InetSocketAddress getInetSocketAddress(String ipAddress, String portNum) {
@@ -40,7 +40,7 @@ public class Util {
             String truncatedHashText = hashText.substring(0, M / 4);
             id = Long.parseLong(truncatedHashText, 16);
         } catch (NoSuchAlgorithmException e) {
-            e.printStackTrace();
+            // TODO: EXCEPTION HANDLER
         }
         return id;
     }

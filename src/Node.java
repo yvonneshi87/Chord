@@ -1,10 +1,4 @@
-import java.math.BigInteger;
 import java.net.*;
-import java.net.ServerSocket;
-import java.io.IOException;
-import java.net.Socket;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
 
 public class Node {
     private static final int NUM_SUCCESSORS = 3; // Number of successors to keep in each node
@@ -20,6 +14,8 @@ public class Node {
     private int next; // stores the index of the next finger to fix.
     private Listener listener;
     private Stabilization stabilization;
+    private FingerTableFixing fingerTableFixing;
+    private PredecessorChecking predecessorChecking;
 
     public Node(String ipAddress, String portNum) {
         this.ipAddress = ipAddress;
@@ -32,6 +28,8 @@ public class Node {
         next = 0;
         listener = new Listener(this);
         stabilization = new Stabilization(this);
+        fingerTableFixing = new FingerTableFixing(this);
+        predecessorChecking = new PredecessorChecking(this);
     }
 
     // Join a Chord ring containing node n', meaning n' is the entry point
@@ -49,6 +47,8 @@ public class Node {
         }
         listener.start();
         stabilization.start();
+        fingerTableFixing.start();
+        predecessorChecking.start();
         return true;
     }
 
@@ -61,12 +61,7 @@ public class Node {
     }
 
 
-    // called periodically. checks whether predecessor has failed.
-    public void checkPredecessor() {
-        if (Message.requestPing(this.predecessor) == false) {
-            this.predecessor = null;
-        }
-    }
+
 
     // find the successor of id
     public InetSocketAddress findSuccessor(long id) {

@@ -24,8 +24,4 @@ public class Stabilization extends Thread {
         }
 
     }
-
-    public void toDie() {
-        active = false;
-    }
 }
