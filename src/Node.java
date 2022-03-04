@@ -15,7 +15,7 @@ public class Node {
     private InetSocketAddress isa;
     private long id;
     private InetSocketAddress[] fingerTable;
-    private Node predecessor;
+    private InetSocketAddress predecessor;
     private InetSocketAddress[] successors;
     private int next; // stores the index of the next finger to fix.
     private Listener listener;
@@ -25,32 +25,13 @@ public class Node {
         this.ipAddress = ipAddress;
         this.portNum = portNum;
         isa = Util.getInetSocketAddress(ipAddress, portNum);
-        assignId();
+        id = Util.getId(isa);
         fingerTable = new InetSocketAddress[M];
         predecessor = null;
         successors = new InetSocketAddress[NUM_SUCCESSORS];
         next = 0;
         listener = new Listener(this);
         stabilization = new Stabilization(this);
-    }
-
-    // This method hashes (ip address + port number) to 160 bit String
-    // hashText is 160 bits long (= 40 hex digits * 4 bit per hex digit)
-    // truncates hashText to 32 bits
-    // gets peer id between 0 and (2^m - 1) by converting truncatedHashText to a long number
-    private void assignId() {
-        String input = ipAddress + ":" + portNum;
-        try {
-            MessageDigest md = MessageDigest.getInstance("SHA-1");
-            byte[] messageDigest = md.digest(input.getBytes());
-            BigInteger no = new BigInteger(1, messageDigest);
-            String hashText = no.toString(16);
-            // TODO: NOT SURE IF TRUNCATION IS CORRECT
-            String truncatedHashText = hashText.substring(0, 9);
-            id = Long.parseLong(truncatedHashText, 16);
-        } catch (NoSuchAlgorithmException e) {
-            e.printStackTrace();
-        }
     }
 
     // Join a Chord ring containing node n', meaning n' is the entry point
@@ -73,9 +54,9 @@ public class Node {
 
 
     // nPrime thinks it might be our predecessor
-    public void notify(Node nPrime) {
-        if (predecessor == null || Util.isInInterval(predecessor.id, id, nPrime.id)) {
-            predecessor = nPrime;
+    public void notify(InetSocketAddress nPrimeIsa) {
+        if (this.predecessor == null || Util.isInInterval(Util.getId(this.predecessor), this.id, Util.getId(nPrimeIsa))) {
+            this.predecessor = nPrimeIsa;
         }
     }
 
@@ -88,23 +69,23 @@ public class Node {
     }
 
     // find the successor of id
-    public Node findSuccessor(long id) {
-        if (Util.isInInterval(id, successors[0].id, id)) {
-            return successors[0];
+    public InetSocketAddress findSuccessor(long id) {
+        if (Util.isInInterval(this.id, Util.getId(this.successors[0]), id)) {
+            return this.successors[0];
         } else {
-            Node nPrime = closestPrecedingNode(id);
-            return Message.requestFindSuccessor(id, nPrime);
+            InetSocketAddress nPrimeIsa = closestPrecedingNode(id);
+            return Message.requestFindSuccessor(id, nPrimeIsa);
         }
     }
 
     // search the local table for the highest predecessor of id
-    public Node closestPrecedingNode(long id) {
+    public InetSocketAddress closestPrecedingNode(long id) {
         for (int i = M - 1; i >= 0; i--) {
-            if (Util.isInInterval(this.id, id, this.fingerTable[i].id)) {
+            if (Util.isInInterval(this.id, id, Util.getId(this.fingerTable[i]))) {
                 return fingerTable[i];
             }
         }
-        return this;
+        return this.isa;
     }
 
     // TODO: need to implement logics for multiple successors
@@ -136,5 +117,9 @@ public class Node {
 
     public int getPort() {
         return Integer.parseInt(portNum);
+    }
+
+    public InetSocketAddress getPredecessor() {
+        return predecessor;
     }
 }

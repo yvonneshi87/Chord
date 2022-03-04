@@ -23,7 +23,29 @@ public class Util {
         }
     }
 
-    // Check if x is in between low and high on the ring
+    // This method hashes (ip address + port number) to 160 bit String
+    // hashText is 160 bits long (= 40 hex digits * 4 bit per hex digit)
+    // truncates hashText to 32 bits
+    // gets peer id between 0 and (2^m - 1) by converting truncatedHashText to a long number
+    public static long getId(InetSocketAddress isa) {
+        String ipAddress = isa.getHostString();
+        String portNum = String.valueOf(isa.getPort());
+        String input = ipAddress + ":" + portNum;
+        long id = -1;
+        try {
+            MessageDigest md = MessageDigest.getInstance("SHA-1");
+            byte[] messageDigest = md.digest(input.getBytes());
+            BigInteger no = new BigInteger(1, messageDigest);
+            String hashText = no.toString(16);
+            String truncatedHashText = hashText.substring(0, M / 4);
+            id = Long.parseLong(truncatedHashText, 16);
+        } catch (NoSuchAlgorithmException e) {
+            e.printStackTrace();
+        }
+        return id;
+    }
+
+    // check if x is in between low and high on the ring
     public static boolean isInInterval(long low, long high, long x) {
         if (low > high) {
             high += TOTAL;
