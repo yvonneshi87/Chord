@@ -2,6 +2,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintStream;
+import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.Socket;
 
@@ -11,12 +12,12 @@ public class Message {
     FIND_SUCCESSOR, RETURN_PREDECESSOR, NOTIFY, PING
   }
 
-  // Ask targetNode to run findSuccessor(id), return the successor node
+  // Ask targetNode to run findSuccessor(id), return the successor's isa
   public static InetSocketAddress requestFindSuccessor(long id, InetSocketAddress targetNodeIsa) {
-    String ip = targetNodeIsa.getHostString();
+    InetAddress address = targetNodeIsa.getAddress();
     int port = targetNodeIsa.getPort();
     try {
-      Socket socket = new Socket(ip, port);
+      Socket socket = new Socket(address, port);
       PrintStream out = new PrintStream(socket.getOutputStream());
       BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
       out.println(MessageType.FIND_SUCCESSOR);
@@ -31,7 +32,7 @@ public class Message {
 
       return new InetSocketAddress(retIp, Integer.parseInt(retPort));
     } catch (IOException e) {
-      // TODO Auto-generated catch block
+      // TODO:
       return null;
     }
   }

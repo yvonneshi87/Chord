@@ -19,6 +19,7 @@ public class Node {
     private InetSocketAddress[] successors;
     private int next; // stores the index of the next finger to fix.
     private Listener listener;
+    private Stabilization stabilization;
 
     public Node(String ipAddress, String portNum) {
         this.ipAddress = ipAddress;
@@ -30,6 +31,7 @@ public class Node {
         successors = new InetSocketAddress[NUM_SUCCESSORS];
         next = 0;
         listener = new Listener(this);
+        stabilization = new Stabilization(this);
     }
 
     // This method hashes (ip address + port number) to 160 bit String
@@ -65,34 +67,18 @@ public class Node {
             }
         }
         listener.start();
+        stabilization.start();
         return true;
     }
 
-    // called periodically. verifies this node’s immediate successor, and tells the
-    // successor about this node
-    public void stabilize() {
-        Node x = Message.requestReturnPredecessor(this.successors[0]);
-        if (Util.isInInterval(this.id, this.successors[0].id, x.id)) {
-            successors[0] = x;
-        }
-        Message.requestNotify(this, this.successors[0]);
-    }
 
     // nPrime thinks it might be our predecessor
     public void notify(Node nPrime) {
-        if (this.predecessor == null || Util.isInInterval(this.predecessor.id, this.id, nPrime.id)) {
-            this.predecessor = nPrime;
+        if (predecessor == null || Util.isInInterval(predecessor.id, id, nPrime.id)) {
+            predecessor = nPrime;
         }
     }
 
-    // called periodically. refreshes finger table entries
-    public void fixFingers() {
-        this.fingerTable[next] = findSuccessor(Util.ringAdd(this.id, 1 << next));
-        next++;
-        if (next >= M) {
-            next = 0;
-        }
-    }
 
     // called periodically. checks whether predecessor has failed.
     public void checkPredecessor() {
@@ -103,8 +89,8 @@ public class Node {
 
     // find the successor of id
     public Node findSuccessor(long id) {
-        if (Util.isInInterval(this.id, this.successors[0].id, id)) {
-            return this.successors[0];
+        if (Util.isInInterval(id, successors[0].id, id)) {
+            return successors[0];
         } else {
             Node nPrime = closestPrecedingNode(id);
             return Message.requestFindSuccessor(id, nPrime);

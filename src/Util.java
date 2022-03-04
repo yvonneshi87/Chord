@@ -1,6 +1,4 @@
-import java.math.BigInteger;
 import java.net.*;
-import java.security.*;
 
 public class Util {
     private static final int M = 32;
@@ -25,7 +23,7 @@ public class Util {
         }
     }
 
-    // check if x is in between low and high on the ring
+    // Check if x is in between low and high on the ring
     public static boolean isInInterval(long low, long high, long x) {
         if (low > high) {
             high += TOTAL;
@@ -33,17 +31,15 @@ public class Util {
                 x += TOTAL;
             }
         }
-
         return (x > low && x < high);
     }
 
-    // add x and y on the ring, and return the sum
-    public static long ringAdd(long x, long y) {
+    // Add x and y on the ring, and return the sum
+    public static long ringAddition(long x, long y) {
         long result = x + y;
         if (result > TOTAL) {
             result -= TOTAL;
         }
-
         return result;
     }
 }
