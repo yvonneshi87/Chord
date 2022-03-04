@@ -31,18 +31,16 @@ public class Util {
         String ipAddress = isa.getHostString();
         String portNum = String.valueOf(isa.getPort());
         String input = ipAddress + ":" + portNum;
-        long id = -1;
         try {
             MessageDigest md = MessageDigest.getInstance("SHA-1");
             byte[] messageDigest = md.digest(input.getBytes());
             BigInteger no = new BigInteger(1, messageDigest);
             String hashText = no.toString(16);
             String truncatedHashText = hashText.substring(0, M / 4);
-            id = Long.parseLong(truncatedHashText, 16);
+            return Long.parseLong(truncatedHashText, 16);
         } catch (NoSuchAlgorithmException e) {
-            // TODO: EXCEPTION HANDLER
+            return -1;
         }
-        return id;
     }
 
     // check if x is in between low and high on the ring

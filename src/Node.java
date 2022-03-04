@@ -12,6 +12,7 @@ public class Node {
     private InetSocketAddress predecessor;
     private InetSocketAddress[] successors;
     private int next; // stores the index of the next finger to fix.
+
     private Listener listener;
     private Stabilization stabilization;
     private FingerTableFixing fingerTableFixing;
@@ -45,23 +46,28 @@ public class Node {
                 return false;
             }
         }
-        listener.start();
-        stabilization.start();
-        fingerTableFixing.start();
-        predecessorChecking.start();
+        startAllThreads();
         return true;
     }
 
 
-    // nPrime thinks it might be our predecessor
+    // n′ thinks it might be our predecessor.
+    // n.notify(n′) {
+    //  if (predecessor is nil or n′ ∈ (predecessor, n)) {
+    //      predecessor = n′;
+    //  }
+    // }
+    /* Bascially, what's happening in this function is n' believes it is the predecessor of n.
+    So it will notify n like 'hey dude, I am your predecessor!'
+    Once notified, n will check if n' is null or n' is indeed its predecessor.
+    If true then assign n' to predecessor of n.
+     */
     public void notify(InetSocketAddress nPrimeIsa) {
-        if (this.predecessor == null || Util.isInInterval(Util.getId(this.predecessor), this.id, Util.getId(nPrimeIsa))) {
-            this.predecessor = nPrimeIsa;
-        }
+//        if (predecessor == null || Util.isInInterval(Util.getId(predecessor), id, Util.getId(nPrimeIsa))) {
+//            this.predecessor = nPrimeIsa;
+//        }
+
     }
-
-
-
 
     // find the successor of id
     public InetSocketAddress findSuccessor(long id) {
@@ -88,6 +94,20 @@ public class Node {
         // for (int i = 0; i < Chord.NUM_SUCCESSORS; i++) {
         // successors[i] = findSuccessor(id);
         // }
+    }
+
+    private void startAllThreads() {
+        listener.start();
+        stabilization.start();
+        fingerTableFixing.start();
+        predecessorChecking.start();
+    }
+
+    private void terminateAllThreads() {
+        listener.terminate();
+        stabilization.terminate();
+        fingerTableFixing.terminate();
+        predecessorChecking.terminate();
     }
 
     @Override

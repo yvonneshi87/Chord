@@ -23,5 +23,9 @@ public class FingerTableFixing extends Thread {
         }
     }
 
+    public void terminate() {
+        active = false;
+    }
+
 
 }

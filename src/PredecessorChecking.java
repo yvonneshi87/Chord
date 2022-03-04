@@ -17,11 +17,13 @@ public class PredecessorChecking extends Thread {
 //            this.predecessor = null;
 //        }
 //    }
-        
+
         while (active) {
             // TODO:
         }
     }
 
-
+    public void terminate() {
+        active = false;
+    }
 }
