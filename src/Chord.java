@@ -3,9 +3,6 @@ import java.net.InetSocketAddress;
 import java.net.UnknownHostException;
 
 public class Chord {
-    public static final int NUM_SUCCESSORS = 3; // Number of successors to keep in each node
-    public static final int M = 32; // Number of bits used
-    public static final int TOTAL = 1 << M; // Maximum number of nodes
 
     public static void main(String[] args) {
         // Get User input and check its validity

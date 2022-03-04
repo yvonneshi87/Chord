@@ -3,6 +3,8 @@ import java.net.*;
 import java.security.*;
 
 public class Util {
+    private static final int M = 32;
+    private static final int TOTAL = 1 << M; // Maximum number of nodes
 
     private static long[] exponentTable = null;
 
@@ -16,7 +18,7 @@ public class Util {
             int port = Integer.parseInt(portNum);
             return new InetSocketAddress(ip, port);
 
-        } catch (UnknownHostException | NumberFormatException e1) {
+        } catch (UnknownHostException | NumberFormatException e) {
             System.out.println("Cannot create InetSocketAddress using IP: " + ipAddress
             + " and PORT: " + portNum);
             return null;
@@ -26,9 +28,9 @@ public class Util {
     // check if x is in between low and high on the ring
     public static boolean isInInterval(long low, long high, long x) {
         if (low > high) {
-            high += Chord.TOTAL;
+            high += TOTAL;
             if (x < low) {
-                x += Chord.TOTAL;
+                x += TOTAL;
             }
         }
 
@@ -38,8 +40,8 @@ public class Util {
     // add x and y on the ring, and return the sum
     public static long ringAdd(long x, long y) {
         long result = x + y;
-        if (result > Chord.TOTAL) {
-            result -= Chord.TOTAL;
+        if (result > TOTAL) {
+            result -= TOTAL;
         }
 
         return result;

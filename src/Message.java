@@ -1,6 +1,8 @@
 import java.io.BufferedReader;
+import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintStream;
+import java.net.InetSocketAddress;
 import java.net.Socket;
 
 public class Message {
@@ -10,15 +12,15 @@ public class Message {
   }
 
   // Ask targetNode to run findSuccessor(id), return the successor node
-  public static Node requestFindSuccessor(long id, Node targetNode) {
-    String ip = targetNode.getIsa().getHostString();
-    int port = targetNode.getIsa().getPort();
+  public static InetSocketAddress requestFindSuccessor(long id, InetSocketAddress targetNodeIsa) {
+    String ip = targetNodeIsa.getHostString();
+    int port = targetNodeIsa.getPort();
     try {
       Socket socket = new Socket(ip, port);
       PrintStream out = new PrintStream(socket.getOutputStream());
       BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
       out.println(MessageType.FIND_SUCCESSOR);
-      out.println(String.valueOf(id));
+      out.println(id);
 
       String retIp = in.readLine();
       String retPort = in.readLine();
@@ -27,23 +29,20 @@ public class Message {
       out.close();
       socket.close();
 
-      Node retNode = new Node(retIp, retPort);
-      return retNode;
-    } catch (Exception e) {
+      return new InetSocketAddress(retIp, Integer.parseInt(retPort));
+    } catch (IOException e) {
       // TODO Auto-generated catch block
-      e.printStackTrace();
+      return null;
     }
-
-    return null;
   }
 
   // Ask targetNode to return its predecessor, return the predecessor node
-  public static Node requestReturnPredecessor(Node targetNode) {
+  public static Node requestReturnPredecessor(InetSocketAddress targetNodeIsa) {
     return null;
   }
 
   // Ask targetNode to run notify(selfNode)
-  public static void requestNotify(Node selfNode, Node targetNode) {
+  public static void requestNotify(InetSocketAddress selfNode, InetSocketAddress targetNode) {
 
   }
 
@@ -55,7 +54,7 @@ public class Message {
   // Receive one incoming message, parse it, and run the corresponding method on
   // selfNode
   // (return true: OK. false: failed)
-  public static boolean receiveIncomingMessage(Socket socket, Node selfNode) {
+  public static boolean receiveIncomingMessage(Socket socket, InetSocketAddress selfNodeIsa) {
     try {
       PrintStream out = new PrintStream(socket.getOutputStream());
       BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
