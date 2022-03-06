@@ -69,14 +69,23 @@ public class Node {
 
     }
 
-    // find the successor of id
+    public void notified(InetSocketAddress newPredecessorIsa) {
+
+    }
+
+    // Find the successor of id
     public InetSocketAddress findSuccessor(long id) {
-        if (Util.isInInterval(this.id, Util.getId(this.successors[0]), id)) {
+        if (Util.isInInterval(this.id, Util.getId(successors[0]), id)) {
             return this.successors[0];
         } else {
             InetSocketAddress nPrimeIsa = closestPrecedingNode(id);
             return Message.requestFindSuccessor(id, nPrimeIsa);
         }
+    }
+
+    public InetSocketAddress findPredecessor(long id) {
+        // TODO
+        return null;
     }
 
     // search the local table for the highest predecessor of id
@@ -88,6 +97,49 @@ public class Node {
         }
         return this.isa;
     }
+
+    // Update the ith entry of the finger table
+    // If the newIsa is indeed the new successor, notify it.
+    // TODO: WE NEED TO TAKE A CLOSER LOOK AT SYNCHRONIZATION.
+    private synchronized void updateFingerTableEntry(int i, InetSocketAddress newIsa) {
+        fingerTable[i] = newIsa;
+
+        if (i == 0 && newIsa != null && !newIsa.equals(isa)) {
+            notify(newIsa);
+        }
+    }
+
+    private void deleteSuccessor() {
+        InetSocketAddress successor = fingerTable[0];
+        if (successor == null) {
+            return;
+        }
+        int i = 31;
+        for (; i >= 0; i--) {
+           if (fingerTable[i] != null && fingerTable[i].equals(successor)) {
+               break;
+           }
+       }
+
+       for (int j = i; j >= 0; j--) {
+           updateFingerTableEntry(j, null);
+       }
+
+       if (predecessor != null && predecessor.equals(successor)) {
+           predecessor = null;
+       }
+
+       // TODO
+    }
+
+    private void removeNodeFromFingerTable(InetSocketAddress removedIsa) {
+        for (int i = 0; i < M; i++) {
+            if (fingerTable[i] != null && fingerTable[i].equals(removedIsa)) {
+                fingerTable[i] = null;
+            }
+        }
+    }
+
 
     // TODO: need to implement logics for multiple successors
     private void findSuccessors(long id) {
