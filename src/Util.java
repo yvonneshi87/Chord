@@ -1,6 +1,8 @@
 import java.math.BigInteger;
 import java.net.*;
 import java.security.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class Util {
     private static final int M = 32;
@@ -76,4 +78,36 @@ public class Util {
         long relativeId = universalId - localId;
         return (relativeId >= 0) ? relativeId : (relativeId + TWO_TO_M);
     }
+
+    /**
+     * generate InetSocketAddress from a string that contains socket address information.
+     * @param addressInfo
+     * @return :
+     * eg. input:  "my address is: 10.0.0.11:8000")
+     *     output:  /10.0.0.11:8000
+     */
+    public static InetSocketAddress generate_socket_address(String addressInfo){
+        String s = "[0-9]+.[0-9]+.[0-9]+.[0-9]+:[0-9][0-9][0-9][0-9]+";
+        Pattern p = Pattern.compile(s);
+        Matcher matcher = p.matcher(addressInfo);
+        boolean found = matcher.find();
+        String addressFound = null;
+        if(found == false){
+            System.out.println("No validated ip address information founded");
+            return null;
+        }else{
+            addressFound = matcher.group(0);
+            String[] split = addressFound.split(":");
+            InetAddress ip = null;
+            try{
+                ip = InetAddress.getByName(split[0]);
+            } catch (UnknownHostException e) {
+                e.printStackTrace();
+                System.out.println("Can't generate an ip address.");
+                return null;
+            }
+            int port = Integer.parseInt(split[1]);
+            return new InetSocketAddress(ip, port);
+        }
+    } // end of generate_socket_address
 }

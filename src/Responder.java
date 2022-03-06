@@ -1,10 +1,6 @@
 import java.io.*;
 import java.net.InetSocketAddress;
 import java.net.Socket;
-import java.net.UnknownHostException;
-import java.util.regex.*;
-import java.net.InetAddress;
-import java.net.UnknownHostException;
 
 public class Responder extends Thread {
     private Node node;
@@ -17,26 +13,7 @@ public class Responder extends Thread {
 
     @Override
     public void run() {
-        try {
-            InputStream inputStream = socket.getInputStream();
-            String requestStr = null;
-            if (inputStream != null) {
-               BufferedReader br = new BufferedReader(new InputStreamReader(inputStream));
-               requestStr = br.readLine();
-            }
-            String responseStr = (requestStr == null) ? null : getResponseStr(requestStr);
-
-            OutputStream outputStream = socket.getOutputStream();
-            if (responseStr != null) {
-                outputStream.write(responseStr.getBytes());
-            }
-
-            // TODO: DO WE NEED TO CLOSE OUTPUTSTREAM? WHAT SHOULD WE DO AFTERWARDS?
-            inputStream.close();
-            outputStream.close();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        Message.receiveIncomingMessage(socket, node);
     }
 
     /**
@@ -44,6 +21,7 @@ public class Responder extends Thread {
      * @param requestStr
      * @return
      */
+    // TODO: determine if this is needed
     private String getResponseStr(String requestStr) {
         if ( requestStr== null){
             return null;
@@ -89,7 +67,7 @@ public class Responder extends Thread {
 
             }
             case ("I_AM_YOUR_PRE") : {
-                InetSocketAddress pre = generate_socket_address(requestStr.split(":")[1]);
+                InetSocketAddress pre = Util.generate_socket_address(requestStr.split(":")[1]);
                 node.notified(pre); // set pre as node's predecessor.
                 return "NOTIFIED";
             }
@@ -124,36 +102,6 @@ public class Responder extends Thread {
         return requestType;
     }
 
-    /**
-     * generate InetSocketAddress from a string that contains socket address information.
-     * @param addressInfo
-     * @return :
-     * eg. input:  "my address is: 10.0.0.11:8000")
-     *     output:  /10.0.0.11:8000
-     */
-    public static InetSocketAddress generate_socket_address(String addressInfo){
-        String s = "[0-9]+.[0-9]+.[0-9]+.[0-9]+:[0-9][0-9][0-9][0-9]+";
-        Pattern p = Pattern.compile(s);
-        Matcher matcher = p.matcher(addressInfo);
-        boolean found = matcher.find();
-        String addressFound = null;
-        if(found == false){
-            System.out.println("No validated ip address information founded");
-            return null;
-        }else{
-            addressFound = matcher.group(0);
-            String[] split = addressFound.split(":");
-            InetAddress ip = null;
-            try{
-                ip = InetAddress.getByName(split[0]);
-            } catch (UnknownHostException e) {
-                e.printStackTrace();
-                System.out.println("Can't generate an ip address.");
-                return null;
-            }
-            int port = Integer.parseInt(split[1]);
-            return new InetSocketAddress(ip, port);
-        }
-    } // end of generate_socket_address
+    
 
 }
