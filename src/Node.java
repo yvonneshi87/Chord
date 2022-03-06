@@ -69,6 +69,12 @@ public class Node {
 
     }
 
+
+    /**
+     * Notified that the newPredecessor is our predecessor.
+     * compare the newPredecessor and oldPredecessor's position, renew the predecessor as the closer one.
+     * @param newPredecessor
+     */
     public void notified(InetSocketAddress newPredecessor) {
         if (newPredecessor == null || predecessor.equals(newPredecessor)) {
             predecessor = newPredecessor;
@@ -78,10 +84,10 @@ public class Node {
         long oldPredecessorId = Util.getId(predecessor);
         long newPredecessorId = Util.getId(newPredecessor);
 
-        long relativeId = Util.getRelativeId(id, oldPredecessorId);
+        long relativeId = Util.getRelativeId(id, oldPredecessorId); // id - oldPre
         long newPredecessorRelativeId = Util.getRelativeId(newPredecessorId, oldPredecessorId);
 
-        if (newPredecessorRelativeId < relativeId) {
+        if (newPredecessorRelativeId < relativeId) { // new predecessor is near to id than old pre
             predecessor = newPredecessor;
         }
 
@@ -92,7 +98,7 @@ public class Node {
         if (Util.isInInterval(this.id, Util.getId(successors[0]), id)) {
             return this.successors[0];
         } else {
-            InetSocketAddress nPrimeIsa = closestPrecedingNode(id);
+            InetSocketAddress nPrimeIsa = closestPreceding(id);
             return Message.requestFindSuccessor(id, nPrimeIsa);
         }
     }
@@ -103,7 +109,7 @@ public class Node {
     }
 
     // search the local table for the highest predecessor of id
-    public InetSocketAddress closestPrecedingNode(long id) {
+    public InetSocketAddress closestPreceding(long id) {
         for (int i = M - 1; i >= 0; i--) {
             if (Util.isInInterval(this.id, id, Util.getId(this.fingerTable[i]))) {
                 return fingerTable[i];
@@ -202,5 +208,8 @@ public class Node {
 
     public InetSocketAddress getPredecessor() {
         return predecessor;
+    }
+    public InetSocketAddress getSuccessor(){
+        return successors[0];
     }
 }
