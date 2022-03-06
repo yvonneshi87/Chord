@@ -27,13 +27,14 @@ public class Listener extends Thread {
     @Override
     // Run socket to accept
     public void run() {
-        // TODO: CAN'T FIGURE OUT super.run()
-        super.run();
-
         while(active){
             try{
-                Socket communicator = serverSocket.accept();
-                // TODO: CONSTRUCT A SPEAKER
+                Socket communicateSocket = serverSocket.accept();
+                // TODO: CHECK SCRIPTS
+                Responder talker = new Responder(node, communicateSocket);
+                // difference between start and run:
+                // https://www.geeksforgeeks.org/difference-between-thread-start-and-thread-run-in-java/
+                talker.start();
             }catch (IOException e) {
                 // TODO: REWRITE EXCEPTION HANDLER
                 throw new RuntimeException("Can't accept message ", e);
