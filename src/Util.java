@@ -5,6 +5,15 @@ import java.security.*;
 public class Util {
     private static final int M = 32;
     private static final int TOTAL = 1 << M; // Maximum number of nodes
+    private static long TWO_TO_M;
+
+    private Util() {
+        long tmp = 1L;
+        for (int i = 0; i < M; i++) {
+            tmp *= 2;
+        }
+        TWO_TO_M = tmp;
+    }
 
     // Construct InetSocketAddress with ip address and port number
     public static InetSocketAddress getInetSocketAddress(String ipAddress, String portNum) {
@@ -61,5 +70,10 @@ public class Util {
             result -= TOTAL;
         }
         return result;
+    }
+
+    public static long getRelativeId(long universalId, long localId) {
+        long relativeId = universalId - localId;
+        return (relativeId >= 0) ? relativeId : (relativeId + TWO_TO_M);
     }
 }

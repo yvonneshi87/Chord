@@ -69,7 +69,21 @@ public class Node {
 
     }
 
-    public void notified(InetSocketAddress newPredecessorIsa) {
+    public void notified(InetSocketAddress newPredecessor) {
+        if (newPredecessor == null || predecessor.equals(newPredecessor)) {
+            predecessor = newPredecessor;
+            return;
+        }
+
+        long oldPredecessorId = Util.getId(predecessor);
+        long newPredecessorId = Util.getId(newPredecessor);
+
+        long relativeId = Util.getRelativeId(id, oldPredecessorId);
+        long newPredecessorRelativeId = Util.getRelativeId(newPredecessorId, oldPredecessorId);
+
+        if (newPredecessorRelativeId < relativeId) {
+            predecessor = newPredecessor;
+        }
 
     }
 
