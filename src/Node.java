@@ -39,7 +39,7 @@ public class Node {
     // successor = n′.find successor(n);
     // }
     public boolean join(InetSocketAddress nPrimeIsa) {
-        if (!isa.equals(this.isa)) {
+        if (!nPrimeIsa.equals(this.isa)) {
             // TODO:
             successors[0] = Message.requestFindSuccessor(id, nPrimeIsa);
             if (successors[0] == null) {
@@ -63,10 +63,9 @@ public class Node {
     If true then assign n' to predecessor of n.
      */
     public void notify(InetSocketAddress nPrimeIsa) {
-//        if (predecessor == null || Util.isInInterval(Util.getId(predecessor), id, Util.getId(nPrimeIsa))) {
-//            this.predecessor = nPrimeIsa;
-//        }
-
+       if (predecessor == null || Util.isInInterval(Util.getId(predecessor), id, Util.getId(nPrimeIsa))) {
+           this.predecessor = nPrimeIsa;
+       }
     }
 
 
