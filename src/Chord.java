@@ -44,6 +44,22 @@ public class Chord {
             } else {
                 throw new ConnectToNodeException("contact node");
             }
+
+            node.printNode();
+            Scanner userinput = new Scanner(System.in);
+            while(true) {
+                System.out.println("check info or exit? type( i or e):");
+                String command = userinput.next();
+                if (command.startsWith("i")) {
+                    node.printNode();
+                }
+                else if(command.startsWith("e")) {
+                    node.terminate();
+                    System.out.println("This node is leaving the chord.");
+                    System.exit(0);
+                }
+            }
+
         } catch (UnknownHostException e) {
             System.out.println("Fatal error while finding the local ip. Now exit.");
             System.exit(0);
@@ -51,5 +67,6 @@ public class Chord {
             System.out.println(e.getMessage());
             System.exit(0);
         }
+
     }
 }

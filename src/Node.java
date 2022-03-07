@@ -114,8 +114,10 @@ public class Node {
         }
     }
 
+
     public InetSocketAddress findPredecessor(long id) {
         // TODO
+
         return null;
     }
 
@@ -178,11 +180,24 @@ public class Node {
         // }
     }
 
+    /**
+     * Start all the threads in the node
+     */
     private void startAllThreads() {
         listener.start();
         stabilization.start();
         fingerTableFixing.start();
         predecessorChecking.start();
+    }
+
+    /**
+     * Terminate all the threads in the node.
+     */
+    public void terminate(){
+        if (listener != null) listener.terminate();
+        if (fingerTableFixing != null) fingerTableFixing.terminate();
+        if (stabilization != null) stabilization.terminate();
+        if (predecessorChecking != null) predecessorChecking.terminate();
     }
 
     private void terminateAllThreads() {
@@ -235,4 +250,29 @@ public class Node {
     public synchronized void setIthSuccessor(int i, InetSocketAddress isa) {
         successors[i] = isa;
     }
+    public void printNode(){
+        System.out.println("___*___*___*___*___*___*___*___Node Information___*___*___*___*___*___*___*___");
+        System.out.println("Decription\t\t\t\tIp address\t id  \t location in the chord\n");
+        System.out.println("\nLocal :\t\t\t\t"+isa.toString()+"\t"+Util.getHexPosition(Util.getId(isa)));
+        if (predecessor != null)
+            System.out.println("\nPREDECESSOR:\t\t\t"+predecessor.toString()+"\t"
+                    +Util.getHexPosition(Util.getId(predecessor)));
+        else
+            System.out.println("\nPREDECESSOR:\t\t\tNULL");
+        System.out.println("\nFINGER TABLE:\n");
+        for (int i = 1; i <= 32; i++) {
+            long ithStartId  = Util.ithStartId(Util.getId(isa),i);
+            InetSocketAddress f = fingerTable[i];
+            StringBuilder sb = new StringBuilder();
+            sb.append(i+"\t"+ Util.longToHex(ithStartId)+"\t\t");
+            if (f!= null)
+                sb.append(f.toString()+"\t"+Util.getHexPosition(Util.getId(f)));
+            else
+                sb.append("NULL");
+            System.out.println(sb.toString());
+        }
+        System.out.println("___*___*___*___*___*___*___*___*___*___*___*___*___*___*___*___");
+    }
+
+
 }
