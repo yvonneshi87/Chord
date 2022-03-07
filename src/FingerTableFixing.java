@@ -1,8 +1,10 @@
+import java.net.InetSocketAddress;
+
 public class FingerTableFixing extends Thread {
     private Node node;
     private boolean active;
     int next;
-    private static final int M = 32; // Number of bits used
+    private static final int M = 4; // Number of bits used
 
     public FingerTableFixing(Node node) {
         this.node = node;
@@ -14,7 +16,9 @@ public class FingerTableFixing extends Thread {
     // called periodically. refreshes finger table entries
     public void run() {
         while (active) {
-            node.updateFingerTableEntry(next, node.findSuccessor(Util.ringAddition(node.getId(), 1 << next)));
+            InetSocketAddress nextIsa = node.findSuccessor(Util.ringAddition(node.getId(), 1 << next));
+            node.updateFingerTableEntry(next, nextIsa);
+            
             next++;
             if (next >= M) {
                 next = 0;
@@ -25,6 +29,7 @@ public class FingerTableFixing extends Thread {
                 // TODO Auto-generated catch block
                 e.printStackTrace();
             }
+            System.out.println(node);
         }
     }
 

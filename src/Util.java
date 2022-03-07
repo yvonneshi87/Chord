@@ -5,7 +5,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class Util {
-    private static final int M = 32;
+    private static final int M = 4;
     private static final int TOTAL = 1 << M; // Maximum number of nodes
     private static long TWO_TO_M;
 
@@ -36,10 +36,10 @@ public class Util {
 
     // This method hashes (ip address + port number) to 160 bit String
     // hashText is 160 bits long (= 40 hex digits * 4 bit per hex digit)
-    // truncates hashText to 32 bits
+    // truncates hashText to M bits
     // gets peer id between 0 and (2^m - 1) by converting truncatedHashText to a long number
     public static long getId(InetSocketAddress isa) {
-        String ipAddress = isa.getHostString();
+        String ipAddress = isa.getHostName();
         String portNum = String.valueOf(isa.getPort());
         String input = ipAddress + ":" + portNum;
         try {
@@ -68,7 +68,7 @@ public class Util {
     // Add x and y on the ring, and return the sum
     public static long ringAddition(long x, long y) {
         long result = x + y;
-        if (result > TOTAL) {
+        if (result >= TOTAL) {
             result -= TOTAL;
         }
         return result;

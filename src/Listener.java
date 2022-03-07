@@ -27,7 +27,7 @@ public class Listener extends Thread {
     @Override
     // Run socket to accept
     public void run() {
-        while(active){
+        while(active) {
             try{
                 Socket communicateSocket = serverSocket.accept();
                 // TODO: CHECK SCRIPTS

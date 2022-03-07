@@ -13,8 +13,7 @@ public class PredecessorChecking extends Thread {
     public void run() {
 
         while (active) {
-            // TODO:
-            if (Message.requestPing(node.getPredecessor()) == false) {
+            if (node.getPredecessor() != null && node.getPredecessor() != node.getIsa() && Message.requestPing(node.getPredecessor()) == false) {
                 node.setPredecessor(null);
             }
 
