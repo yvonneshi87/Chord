@@ -1,8 +1,8 @@
 import java.net.*;
 
 public class Node {
-    private static final int NUM_SUCCESSORS = 3; // Number of successors to keep in each node
-    private static final int M = 4; // Number of bits used
+    private static final int NUM_SUCCESSORS = Chord.NUM_SUCCESSORS; // Number of successors to keep in each node
+    private static final int M = Chord.M; // Number of bits used
 
     private String ipAddress;
     private String portNum;
@@ -11,7 +11,6 @@ public class Node {
     private InetSocketAddress[] fingerTable;
     private InetSocketAddress predecessor;
     private InetSocketAddress[] successors;
-    private int next; // stores the index of the next finger to fix.
 
     private Listener listener;
     private Stabilization stabilization;
@@ -26,7 +25,6 @@ public class Node {
         fingerTable = new InetSocketAddress[M];
         predecessor = null;
         successors = new InetSocketAddress[NUM_SUCCESSORS];
-        next = 0;
         listener = new Listener(this);
         stabilization = new Stabilization(this);
         fingerTableFixing = new FingerTableFixing(this);
@@ -77,28 +75,26 @@ public class Node {
 
     /**
      * Notified that the newPredecessor is our predecessor.
-     * compare the newPredecessor and oldPredecessor's position, renew the
-     * predecessor as the closer one.
-     * 
+     * compare the newPredecessor and oldPredecessor's position, renew the predecessor as the closer one.
      * @param newPredecessor
      */
-    public void notified(InetSocketAddress newPredecessor) {
-        if (newPredecessor == null || predecessor.equals(newPredecessor)) {
-            predecessor = newPredecessor;
-            return;
-        }
+    // public void notified(InetSocketAddress newPredecessor) {
+    //     if (newPredecessor == null || predecessor.equals(newPredecessor)) {
+    //         predecessor = newPredecessor;
+    //         return;
+    //     }
 
-        long oldPredecessorId = Util.getId(predecessor);
-        long newPredecessorId = Util.getId(newPredecessor);
+    //     long oldPredecessorId = Util.getId(predecessor);
+    //     long newPredecessorId = Util.getId(newPredecessor);
 
-        long relativeId = Util.getRelativeId(id, oldPredecessorId); // id - oldPre
-        long newPredecessorRelativeId = Util.getRelativeId(newPredecessorId, oldPredecessorId);
+    //     long relativeId = Util.getRelativeId(id, oldPredecessorId); // id - oldPre
+    //     long newPredecessorRelativeId = Util.getRelativeId(newPredecessorId, oldPredecessorId);
 
-        if (newPredecessorRelativeId < relativeId) { // new predecessor is near to id than old pre
-            predecessor = newPredecessor;
-        }
+    //     if (newPredecessorRelativeId < relativeId) { // new predecessor is near to id than old pre
+    //         predecessor = newPredecessor;
+    //     }
 
-    }
+    // }
 
     // Find the successor of id
     public InetSocketAddress findSuccessor(long id) {
@@ -114,10 +110,8 @@ public class Node {
         }
     }
 
-
     public InetSocketAddress findPredecessor(long id) {
         // TODO
-
         return null;
     }
 
@@ -193,11 +187,15 @@ public class Node {
     /**
      * Terminate all the threads in the node.
      */
-    public void terminate(){
-        if (listener != null) listener.terminate();
-        if (fingerTableFixing != null) fingerTableFixing.terminate();
-        if (stabilization != null) stabilization.terminate();
-        if (predecessorChecking != null) predecessorChecking.terminate();
+    public void terminate() {
+        if (listener != null)
+            listener.terminate();
+        if (fingerTableFixing != null)
+            fingerTableFixing.terminate();
+        if (stabilization != null)
+            stabilization.terminate();
+        if (predecessorChecking != null)
+            predecessorChecking.terminate();
     }
 
     private void terminateAllThreads() {
@@ -250,29 +248,29 @@ public class Node {
     public synchronized void setIthSuccessor(int i, InetSocketAddress isa) {
         successors[i] = isa;
     }
-    public void printNode(){
+
+    public void printNode() {
         System.out.println("___*___*___*___*___*___*___*___Node Information___*___*___*___*___*___*___*___");
         System.out.println("Decription\t\t\t\tIp address\t id  \t location in the chord\n");
-        System.out.println("\nLocal :\t\t\t\t"+isa.toString()+"\t"+Util.getHexPosition(Util.getId(isa)));
+        System.out.println("\nLocal :\t\t\t\t" + isa.toString() + "\t" + Util.getHexPosition(Util.getId(isa)));
         if (predecessor != null)
-            System.out.println("\nPREDECESSOR:\t\t\t"+predecessor.toString()+"\t"
-                    +Util.getHexPosition(Util.getId(predecessor)));
+            System.out.println("\nPREDECESSOR:\t\t\t" + predecessor.toString() + "\t"
+                    + Util.getHexPosition(Util.getId(predecessor)));
         else
             System.out.println("\nPREDECESSOR:\t\t\tNULL");
         System.out.println("\nFINGER TABLE:\n");
         for (int i = 0; i < M; i++) {
-            long ithStartId  = Util.ithStartId(Util.getId(isa),i);
+            long ithStartId = Util.ithStartId(Util.getId(isa), i);
             InetSocketAddress f = fingerTable[i];
             StringBuilder sb = new StringBuilder();
-            sb.append(i+"\t"+ Util.longToHex(ithStartId)+"\t\t");
-            if (f!= null)
-                sb.append(f.toString()+"\t"+Util.getHexPosition(Util.getId(f)));
+            sb.append(i + "\t" + Util.longToHex(ithStartId) + "\t\t");
+            if (f != null)
+                sb.append(f.toString() + "\t" + Util.getHexPosition(Util.getId(f)));
             else
                 sb.append("NULL");
             System.out.println(sb.toString());
         }
         System.out.println("___*___*___*___*___*___*___*___*___*___*___*___*___*___*___*___");
     }
-
 
 }

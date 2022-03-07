@@ -4,7 +4,7 @@ public class FingerTableFixing extends Thread {
     private Node node;
     private boolean active;
     int next;
-    private static final int M = 4; // Number of bits used
+    private static final int M = Chord.M; // Number of bits used
 
     public FingerTableFixing(Node node) {
         this.node = node;
@@ -18,13 +18,13 @@ public class FingerTableFixing extends Thread {
         while (active) {
             InetSocketAddress nextIsa = node.findSuccessor(Util.ringAddition(node.getId(), 1 << next));
             node.updateFingerTableEntry(next, nextIsa);
-            
+
             next++;
             if (next >= M) {
                 next = 0;
             }
             try {
-                Thread.sleep(1000);
+                Thread.sleep(Chord.INTERVAL_MS);
             } catch (InterruptedException e) {
                 // TODO Auto-generated catch block
                 e.printStackTrace();
@@ -36,6 +36,5 @@ public class FingerTableFixing extends Thread {
     public void terminate() {
         active = false;
     }
-
 
 }

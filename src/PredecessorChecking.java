@@ -4,21 +4,20 @@ public class PredecessorChecking extends Thread {
 
     public PredecessorChecking(Node node) {
         this.node = node;
-        active  = true;
+        active = true;
     }
-
 
     @Override
     // called periodically. checks whether predecessor has failed.
     public void run() {
-
         while (active) {
-            if (node.getPredecessor() != null && node.getPredecessor() != node.getIsa() && Message.requestPing(node.getPredecessor()) == false) {
+            if (node.getPredecessor() != null && node.getPredecessor() != node.getIsa()
+                    && Message.requestPing(node.getPredecessor()) == false) {
                 node.setPredecessor(null);
             }
 
             try {
-                Thread.sleep(1000);
+                Thread.sleep(Chord.INTERVAL_MS);
             } catch (InterruptedException e) {
                 // TODO Auto-generated catch block
                 e.printStackTrace();

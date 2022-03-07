@@ -60,12 +60,12 @@ public class Message {
       } else {
         return new InetSocketAddress(retIp, Integer.parseInt(retPort));
       }
-      
+
     } catch (IOException e) {
       // TODO Auto-generated catch block
       return null;
     }
-    
+
   }
 
   // Ask targetNode to run notify(selfNode)
@@ -97,14 +97,14 @@ public class Message {
     String ip = targetNodeIsa.getHostName();
     int port = targetNodeIsa.getPort();
     try {
-      
+
       Socket socket = new Socket(ip, port);
       // wait for 3 seconds
       socket.setSoTimeout(3000);
       PrintStream out = new PrintStream(socket.getOutputStream());
       BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
       out.println(MessageType.PING);
-      
+
       String reply = in.readLine();
 
       in.close();
@@ -150,14 +150,14 @@ public class Message {
           InetSocketAddress retNodeIsa = selfNode.getPredecessor();
           String retIp = retNodeIsa.getHostName();
           int port = retNodeIsa.getPort();
-  
+
           out.println(retIp);
           out.println(String.valueOf(port));
         } else {
           out.println("null");
           out.println("null");
         }
-        
+
         in.close();
         out.close();
         socket.close();
@@ -186,12 +186,11 @@ public class Message {
         return false;
       }
 
-    
     } catch (Exception e) {
       // TODO Auto-generated catch block
       e.printStackTrace();
     }
-    
+
     return true;
   }
 

@@ -19,17 +19,17 @@ public class Stabilization extends Thread {
                 x = Message.requestReturnPredecessor(node.getSuccessor());
             } else {
                 x = node.getPredecessor();
-            } 
-            if (x != null && (node.getSuccessor() == null || node.getSuccessor() == node.getIsa() || Util.isInInterval(node.getId(), Util.getId(node.getSuccessor()), Util.getId(x)))) {
+            }
+            if (x != null && (node.getSuccessor() == null || node.getSuccessor() == node.getIsa()
+                    || Util.isInInterval(node.getId(), Util.getId(node.getSuccessor()), Util.getId(x)))) {
                 node.setIthSuccessor(0, x);
             }
             if (node.getSuccessor() != node.getIsa()) {
                 Message.requestNotify(node.getIsa(), node.getSuccessor());
             }
-            // System.out.println("Ran stablization, successor: " + node.getSuccessor() + ", predecessor: " + node.getPredecessor() + "\n");
-            
+
             try {
-                Thread.sleep(1000);
+                Thread.sleep(Chord.INTERVAL_MS);
             } catch (InterruptedException e) {
                 // TODO Auto-generated catch block
                 e.printStackTrace();
