@@ -26,7 +26,7 @@ public class Stabilization extends Thread {
             if (node.getSuccessor() != node.getIsa()) {
                 Message.requestNotify(node.getIsa(), node.getSuccessor());
             }
-            System.out.println("Ran stablization, successor: " + node.getSuccessor() + ", predecessor: " + node.getPredecessor() + "\n");
+            // System.out.println("Ran stablization, successor: " + node.getSuccessor() + ", predecessor: " + node.getPredecessor() + "\n");
             
             try {
                 Thread.sleep(1000);

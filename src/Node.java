@@ -65,7 +65,7 @@ public class Node {
      * If true then assign n' to predecessor of n.
      */
     public synchronized void notify(InetSocketAddress nPrimeIsa) {
-        System.out.println("notify: " + nPrimeIsa);
+        // System.out.println("notify: " + nPrimeIsa);
         if (nPrimeIsa == null) {
             return;
         }
@@ -260,7 +260,7 @@ public class Node {
         else
             System.out.println("\nPREDECESSOR:\t\t\tNULL");
         System.out.println("\nFINGER TABLE:\n");
-        for (int i = 1; i <= 32; i++) {
+        for (int i = 0; i < M; i++) {
             long ithStartId  = Util.ithStartId(Util.getId(isa),i);
             InetSocketAddress f = fingerTable[i];
             StringBuilder sb = new StringBuilder();
