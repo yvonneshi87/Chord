@@ -13,12 +13,12 @@ public class Listener extends Thread {
     }
 
     // Open server socket
-    private void openServer(){
+    private void openServer() {
         int port = node.getPort();
         try {
             serverSocket = new ServerSocket(port);
             active = true;
-        } catch (IOException e){
+        } catch (IOException e) {
             // TODO: NEED REWRITE EXCEPTION HANDLING HERE.
             throw new RuntimeException("Can't open server port " + port, e);
         }
@@ -27,15 +27,15 @@ public class Listener extends Thread {
     @Override
     // Run socket to accept
     public void run() {
-        while(active){
-            try{
+        while (active) {
+            try {
                 Socket communicateSocket = serverSocket.accept();
                 // TODO: CHECK SCRIPTS
                 Responder talker = new Responder(node, communicateSocket);
                 // difference between start and run:
                 // https://www.geeksforgeeks.org/difference-between-thread-start-and-thread-run-in-java/
                 talker.start();
-            }catch (IOException e) {
+            } catch (IOException e) {
                 // TODO: REWRITE EXCEPTION HANDLER
                 throw new RuntimeException("Can't accept message ", e);
             }

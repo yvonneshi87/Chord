@@ -39,7 +39,7 @@ public class Message {
 
   // Ask targetNode to return its predecessor, return the predecessor node
   public static InetSocketAddress requestReturnPredecessor(InetSocketAddress targetNodeIsa) {
-    String ip = targetNodeIsa.getHostString();
+    String ip = targetNodeIsa.getHostName();
     int port = targetNodeIsa.getPort();
 
     try {
@@ -55,19 +55,24 @@ public class Message {
       out.close();
       socket.close();
 
-      return new InetSocketAddress(retIp, Integer.parseInt(retPort));
+      if (retIp.equals("null")) {
+        return null;
+      } else {
+        return new InetSocketAddress(retIp, Integer.parseInt(retPort));
+      }
+
     } catch (IOException e) {
       // TODO Auto-generated catch block
       return null;
     }
-    
+
   }
 
   // Ask targetNode to run notify(selfNode)
   public static void requestNotify(InetSocketAddress selfNodeIsa, InetSocketAddress targetNodeIsa) {
-    String ip = targetNodeIsa.getHostString();
+    String ip = targetNodeIsa.getHostName();
     int port = targetNodeIsa.getPort();
-    String selfIp = selfNodeIsa.getHostString();
+    String selfIp = selfNodeIsa.getHostName();
     int selfPort = selfNodeIsa.getPort();
 
     try {
@@ -89,24 +94,24 @@ public class Message {
 
   // Ping targetNode to see if it is alive (return true: OK. false: failed)
   public static boolean requestPing(InetSocketAddress targetNodeIsa) {
-    String ip = targetNodeIsa.getHostString();
+    String ip = targetNodeIsa.getHostName();
     int port = targetNodeIsa.getPort();
     try {
-      
+
       Socket socket = new Socket(ip, port);
       // wait for 3 seconds
       socket.setSoTimeout(3000);
       PrintStream out = new PrintStream(socket.getOutputStream());
       BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
       out.println(MessageType.PING);
-      
+
       String reply = in.readLine();
 
       in.close();
       out.close();
       socket.close();
 
-      if (reply == "OK") {
+      if (reply.equals("OK")) {
         return true;
       } else {
         return false;
@@ -131,7 +136,7 @@ public class Message {
         // Requested to run find_successor(id) on selfNode
         long id = Long.valueOf(in.readLine());
         InetSocketAddress retNodeIsa = selfNode.findSuccessor(id);
-        String retIp = retNodeIsa.getHostString();
+        String retIp = retNodeIsa.getHostName();
         int port = retNodeIsa.getPort();
 
         out.println(retIp);
@@ -141,12 +146,18 @@ public class Message {
         socket.close();
         return true;
       } else if (messageType == MessageType.RETURN_PREDECESSOR) {
-        InetSocketAddress retNodeIsa = selfNode.getPredecessor();
-        String retIp = retNodeIsa.getHostString();
-        int port = retNodeIsa.getPort();
+        if (selfNode.getPredecessor() != null) {
+          InetSocketAddress retNodeIsa = selfNode.getPredecessor();
+          String retIp = retNodeIsa.getHostName();
+          int port = retNodeIsa.getPort();
 
-        out.println(retIp);
-        out.println(String.valueOf(port));
+          out.println(retIp);
+          out.println(String.valueOf(port));
+        } else {
+          out.println("null");
+          out.println("null");
+        }
+
         in.close();
         out.close();
         socket.close();
@@ -175,12 +186,11 @@ public class Message {
         return false;
       }
 
-    
     } catch (Exception e) {
       // TODO Auto-generated catch block
       e.printStackTrace();
     }
-    
+
     return true;
   }
 

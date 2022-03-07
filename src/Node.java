@@ -1,8 +1,8 @@
 import java.net.*;
 
 public class Node {
-    private static final int NUM_SUCCESSORS = 3; // Number of successors to keep in each node
-    private static final int M = 32; // Number of bits used
+    private static final int NUM_SUCCESSORS = Chord.NUM_SUCCESSORS; // Number of successors to keep in each node
+    private static final int M = Chord.M; // Number of bits used
 
     private String ipAddress;
     private String portNum;
@@ -11,7 +11,6 @@ public class Node {
     private InetSocketAddress[] fingerTable;
     private InetSocketAddress predecessor;
     private InetSocketAddress[] successors;
-    private int next; // stores the index of the next finger to fix.
 
     private Listener listener;
     private Stabilization stabilization;
@@ -26,7 +25,6 @@ public class Node {
         fingerTable = new InetSocketAddress[M];
         predecessor = null;
         successors = new InetSocketAddress[NUM_SUCCESSORS];
-        next = 0;
         listener = new Listener(this);
         stabilization = new Stabilization(this);
         fingerTableFixing = new FingerTableFixing(this);
@@ -38,81 +36,89 @@ public class Node {
     // predecessor = nil;
     // successor = n′.find successor(n);
     // }
-    public boolean join(InetSocketAddress nPrimeIsa) {
-        if (!nPrimeIsa.equals(this.isa)) {
-            // TODO:
+    public synchronized boolean join(InetSocketAddress nPrimeIsa) {
+        if (!nPrimeIsa.equals(isa)) {
             successors[0] = Message.requestFindSuccessor(id, nPrimeIsa);
             if (successors[0] == null) {
                 return false;
             }
+        } else {
+            successors[0] = isa;
         }
         startAllThreads();
         return true;
     }
 
-
     // n′ thinks it might be our predecessor.
     // n.notify(n′) {
-    //  if (predecessor is nil or n′ ∈ (predecessor, n)) {
-    //      predecessor = n′;
-    //  }
+    // if (predecessor is nil or n′ ∈ (predecessor, n)) {
+    // predecessor = n′;
     // }
-    /* Bascially, what's happening in this function is n' believes it is the predecessor of n.
-    So it will notify n like 'hey dude, I am your predecessor!'
-    Once notified, n will check if n' is null or n' is indeed its predecessor.
-    If true then assign n' to predecessor of n.
+    // }
+    /*
+     * Bascially, what's happening in this function is n' believes it is the
+     * predecessor of n.
+     * So it will notify n like 'hey dude, I am your predecessor!'
+     * Once notified, n will check if n' is null or n' is indeed its predecessor.
+     * If true then assign n' to predecessor of n.
      */
-    public void notify(InetSocketAddress nPrimeIsa) {
-       if (predecessor == null || Util.isInInterval(Util.getId(predecessor), id, Util.getId(nPrimeIsa))) {
-           this.predecessor = nPrimeIsa;
-       }
+    public synchronized void notify(InetSocketAddress nPrimeIsa) {
+        // System.out.println("notify: " + nPrimeIsa);
+        if (nPrimeIsa == null) {
+            return;
+        }
+        if (predecessor == null || predecessor == isa
+                || Util.isInInterval(Util.getId(predecessor), id, Util.getId(nPrimeIsa))) {
+            predecessor = nPrimeIsa;
+        }
     }
-
 
     /**
      * Notified that the newPredecessor is our predecessor.
      * compare the newPredecessor and oldPredecessor's position, renew the predecessor as the closer one.
      * @param newPredecessor
      */
-    public void notified(InetSocketAddress newPredecessor) {
-        if (newPredecessor == null || predecessor.equals(newPredecessor)) {
-            predecessor = newPredecessor;
-            return;
-        }
+    // public void notified(InetSocketAddress newPredecessor) {
+    //     if (newPredecessor == null || predecessor.equals(newPredecessor)) {
+    //         predecessor = newPredecessor;
+    //         return;
+    //     }
 
-        long oldPredecessorId = Util.getId(predecessor);
-        long newPredecessorId = Util.getId(newPredecessor);
+    //     long oldPredecessorId = Util.getId(predecessor);
+    //     long newPredecessorId = Util.getId(newPredecessor);
 
-        long relativeId = Util.getRelativeId(id, oldPredecessorId); // id - oldPre
-        long newPredecessorRelativeId = Util.getRelativeId(newPredecessorId, oldPredecessorId);
+    //     long relativeId = Util.getRelativeId(id, oldPredecessorId); // id - oldPre
+    //     long newPredecessorRelativeId = Util.getRelativeId(newPredecessorId, oldPredecessorId);
 
-        if (newPredecessorRelativeId < relativeId) { // new predecessor is near to id than old pre
-            predecessor = newPredecessor;
-        }
+    //     if (newPredecessorRelativeId < relativeId) { // new predecessor is near to id than old pre
+    //         predecessor = newPredecessor;
+    //     }
 
-    }
+    // }
 
     // Find the successor of id
     public InetSocketAddress findSuccessor(long id) {
-        if (Util.isInInterval(this.id, Util.getId(successors[0]), id)) {
+        if (Util.isInInterval(this.id, Util.getId(successors[0]), id) || id == Util.getId(successors[0])) {
             return this.successors[0];
         } else {
             InetSocketAddress nPrimeIsa = closestPreceding(id);
-            return Message.requestFindSuccessor(id, nPrimeIsa);
+            if (nPrimeIsa == isa) {
+                return isa;
+            } else {
+                return Message.requestFindSuccessor(id, nPrimeIsa);
+            }
         }
     }
 
-
     public InetSocketAddress findPredecessor(long id) {
         // TODO
-
         return null;
     }
 
     // search the local table for the highest predecessor of id
     public InetSocketAddress closestPreceding(long id) {
         for (int i = M - 1; i >= 0; i--) {
-            if (Util.isInInterval(this.id, id, Util.getId(this.fingerTable[i]))) {
+            if (this.fingerTable[i] != null && Util.isInInterval(this.id, id, Util.getId(this.fingerTable[i]))) {
                 return fingerTable[i];
             }
         }
@@ -130,37 +136,36 @@ public class Node {
         }
     }
 
-    private void deleteSuccessor() {
+    private synchronized void deleteSuccessor() {
         InetSocketAddress successor = fingerTable[0];
         if (successor == null) {
             return;
         }
         int i = 31;
         for (; i >= 0; i--) {
-           if (fingerTable[i] != null && fingerTable[i].equals(successor)) {
-               break;
-           }
-       }
+            if (fingerTable[i] != null && fingerTable[i].equals(successor)) {
+                break;
+            }
+        }
 
-       for (int j = i; j >= 0; j--) {
-           updateFingerTableEntry(j, null);
-       }
+        for (int j = i; j >= 0; j--) {
+            updateFingerTableEntry(j, null);
+        }
 
-       if (predecessor != null && predecessor.equals(successor)) {
-           predecessor = null;
-       }
+        if (predecessor != null && predecessor.equals(successor)) {
+            predecessor = null;
+        }
 
-       // TODO
+        // TODO
     }
 
-    private void removeNodeFromFingerTable(InetSocketAddress removedIsa) {
+    private synchronized void removeNodeFromFingerTable(InetSocketAddress removedIsa) {
         for (int i = 0; i < M; i++) {
             if (fingerTable[i] != null && fingerTable[i].equals(removedIsa)) {
                 fingerTable[i] = null;
             }
         }
     }
-
 
     // TODO: need to implement logics for multiple successors
     private void findSuccessors(long id) {
@@ -182,11 +187,15 @@ public class Node {
     /**
      * Terminate all the threads in the node.
      */
-    public void terminate(){
-        if (listener != null) listener.terminate();
-        if (fingerTableFixing != null) fingerTableFixing.terminate();
-        if (stabilization != null) stabilization.terminate();
-        if (predecessorChecking != null) predecessorChecking.terminate();
+    public void terminate() {
+        if (listener != null)
+            listener.terminate();
+        if (fingerTableFixing != null)
+            fingerTableFixing.terminate();
+        if (stabilization != null)
+            stabilization.terminate();
+        if (predecessorChecking != null)
+            predecessorChecking.terminate();
     }
 
     private void terminateAllThreads() {
@@ -201,6 +210,10 @@ public class Node {
         StringBuilder sb = new StringBuilder();
         sb.append("*****NODE**INFO*****\n");
         // TODO
+        sb.append("id: " + String.valueOf(id) + "\n");
+        for (int i = 0; i < M; i++) {
+            sb.append("Finger " + String.valueOf(i) + ": " + String.valueOf(fingerTable[i]) + "\n");
+        }
         return sb.toString();
     }
 
@@ -212,7 +225,7 @@ public class Node {
         return id;
     }
 
-    public String getIp(){
+    public String getIp() {
         return ipAddress;
     }
 
@@ -223,40 +236,41 @@ public class Node {
     public InetSocketAddress getPredecessor() {
         return predecessor;
     }
-    public InetSocketAddress getSuccessor(){
+
+    public InetSocketAddress getSuccessor() {
         return successors[0];
     }
 
-    public void setPredecessor(InetSocketAddress isa) {
+    public synchronized void setPredecessor(InetSocketAddress isa) {
         predecessor = isa;
     }
 
-    public void setIthSuccessor(int i, InetSocketAddress isa) {
+    public synchronized void setIthSuccessor(int i, InetSocketAddress isa) {
         successors[i] = isa;
     }
-    public void printNode(){
+
+    public void printNode() {
         System.out.println("___*___*___*___*___*___*___*___Node Information___*___*___*___*___*___*___*___");
         System.out.println("Decription\t\t\t\tIp address\t id  \t location in the chord\n");
-        System.out.println("\nLocal :\t\t\t\t"+isa.toString()+"\t"+Util.getHexPosition(Util.getId(isa)));
+        System.out.println("\nLocal :\t\t\t\t" + isa.toString() + "\t" + Util.getHexPosition(Util.getId(isa)));
         if (predecessor != null)
-            System.out.println("\nPREDECESSOR:\t\t\t"+predecessor.toString()+"\t"
-                    +Util.getHexPosition(Util.getId(predecessor)));
+            System.out.println("\nPREDECESSOR:\t\t\t" + predecessor.toString() + "\t"
+                    + Util.getHexPosition(Util.getId(predecessor)));
         else
             System.out.println("\nPREDECESSOR:\t\t\tNULL");
         System.out.println("\nFINGER TABLE:\n");
-        for (int i = 1; i <= 32; i++) {
-            long ithStartId  = Util.ithStartId(Util.getId(isa),i);
+        for (int i = 0; i < M; i++) {
+            long ithStartId = Util.ithStartId(Util.getId(isa), i);
             InetSocketAddress f = fingerTable[i];
             StringBuilder sb = new StringBuilder();
-            sb.append(i+"\t"+ Util.longToHex(ithStartId)+"\t\t");
-            if (f!= null)
-                sb.append(f.toString()+"\t"+Util.getHexPosition(Util.getId(f)));
+            sb.append(i + "\t" + Util.longToHex(ithStartId) + "\t\t");
+            if (f != null)
+                sb.append(f.toString() + "\t" + Util.getHexPosition(Util.getId(f)));
             else
                 sb.append("NULL");
             System.out.println(sb.toString());
         }
         System.out.println("___*___*___*___*___*___*___*___*___*___*___*___*___*___*___*___");
     }
-
 
 }
