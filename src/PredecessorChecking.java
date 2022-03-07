@@ -12,14 +12,18 @@ public class PredecessorChecking extends Thread {
     // called periodically. checks whether predecessor has failed.
     public void run() {
 
-        //    public void checkPredecessor() {
-//        if (Message.requestPing(this.predecessor) == false) {
-//            this.predecessor = null;
-//        }
-//    }
-
         while (active) {
             // TODO:
+            if (Message.requestPing(node.getPredecessor()) == false) {
+                node.setPredecessor(null);
+            }
+
+            try {
+                Thread.sleep(1000);
+            } catch (InterruptedException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            }
         }
     }
 

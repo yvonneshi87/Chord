@@ -120,7 +120,7 @@ public class Node {
     // Update the ith entry of the finger table
     // If the newIsa is indeed the new successor, notify it.
     // TODO: WE NEED TO TAKE A CLOSER LOOK AT SYNCHRONIZATION.
-    private synchronized void updateFingerTableEntry(int i, InetSocketAddress newIsa) {
+    public synchronized void updateFingerTableEntry(int i, InetSocketAddress newIsa) {
         fingerTable[i] = newIsa;
 
         if (i == 0 && newIsa != null && !newIsa.equals(isa)) {
@@ -210,5 +210,13 @@ public class Node {
     }
     public InetSocketAddress getSuccessor(){
         return successors[0];
+    }
+
+    public void setPredecessor(InetSocketAddress isa) {
+        predecessor = isa;
+    }
+
+    public void setIthSuccessor(int i, InetSocketAddress isa) {
+        successors[i] = isa;
     }
 }
