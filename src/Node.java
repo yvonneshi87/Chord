@@ -205,15 +205,43 @@ public class Node {
         predecessorChecking.terminate();
     }
 
+    /***
+     * Redefine print of node's format
+     * @return
+     * eg. an output format:
+     * ___*___*___*___*___*___*___*___NODE___INFO___*___*___*___*___*___*___*___*___*___*___
+     * Decription      |       Ip_address       |      id       |      location_in_the_chord
+     * Local :                 10.0.0.34:9887          14              88%
+     * PREDECESSOR:            10.0.0.34:9867          13              81%
+     * FINGER TABLE:
+     * 0       0000000f        10.0.0.34:9888          12              75%
+     * 1       00000000        10.0.0.34:9888          12              75%
+     * 2       00000002        10.0.0.34:9888          12              75%
+     * 3       00000006        10.0.0.34:9888          12              75%
+     * ___*___*___*___*___*___*___*___*___*___*___*___*___*___*___*___*___*___*___*___*___*___
+     */
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
-        sb.append("*****NODE**INFO*****\n");
-        // TODO
-        sb.append("id: " + String.valueOf(id) + "\n");
+        sb.append("___*___*___*___*___*___*___*___NODE___INFO___*___*___*___*___*___*___*___*___*___*___\n");
+        sb.append("Decription\t|\tIp_address\t |\tid\t |\tlocation_in_the_chord\n");
+        sb.append("Local :\t\t\t" + isa.toString().split("/")[1] +"\t\t"+Util.getHexPosition(Util.getId(isa))+"\n");
+        if (predecessor != null)
+            sb.append("PREDECESSOR:\t\t"+predecessor.toString().split("/")[1]+"\t\t"
+                  +Util.getHexPosition(Util.getId(predecessor)) +"\n");
+        else
+            sb.append("PREDECESSOR:\t\tNULL\n");
+        sb.append("FINGER TABLE:\n");
         for (int i = 0; i < M; i++) {
-            sb.append("Finger " + String.valueOf(i) + ": " + String.valueOf(fingerTable[i]) + "\n");
+            long ithStartId  = Util.ithStartId(Util.getId(isa),i);
+            InetSocketAddress f = fingerTable[i];
+            sb.append(i+"\t"+ Util.longToHex(ithStartId)+"\t");
+            if (f!= null)
+                sb.append(f.toString().split("/")[1]+"\t\t"+Util.getHexPosition(Util.getId(f)) + "\n");
+            else
+                sb.append("NULL\n");
         }
+        sb.append("___*___*___*___*___*___*___*___*___*___*___*___*___*___*___*___*___*___*___*___*___*___\n");
         return sb.toString();
     }
 
@@ -247,30 +275,6 @@ public class Node {
 
     public synchronized void setIthSuccessor(int i, InetSocketAddress isa) {
         successors[i] = isa;
-    }
-
-    public void printNode() {
-        System.out.println("___*___*___*___*___*___*___*___Node Information___*___*___*___*___*___*___*___");
-        System.out.println("Decription\t\t\t\tIp address\t id  \t location in the chord\n");
-        System.out.println("\nLocal :\t\t\t\t" + isa.toString() + "\t" + Util.getHexPosition(Util.getId(isa)));
-        if (predecessor != null)
-            System.out.println("\nPREDECESSOR:\t\t\t" + predecessor.toString() + "\t"
-                    + Util.getHexPosition(Util.getId(predecessor)));
-        else
-            System.out.println("\nPREDECESSOR:\t\t\tNULL");
-        System.out.println("\nFINGER TABLE:\n");
-        for (int i = 0; i < M; i++) {
-            long ithStartId = Util.ithStartId(Util.getId(isa), i);
-            InetSocketAddress f = fingerTable[i];
-            StringBuilder sb = new StringBuilder();
-            sb.append(i + "\t" + Util.longToHex(ithStartId) + "\t\t");
-            if (f != null)
-                sb.append(f.toString() + "\t" + Util.getHexPosition(Util.getId(f)));
-            else
-                sb.append("NULL");
-            System.out.println(sb.toString());
-        }
-        System.out.println("___*___*___*___*___*___*___*___*___*___*___*___*___*___*___*___");
     }
 
 }
