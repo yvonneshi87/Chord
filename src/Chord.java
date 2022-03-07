@@ -6,7 +6,7 @@ public class Chord {
     // Change the settings here for convenience
     public static final int M = 4; // Set M to a smaller value for debugging, or a larger value to avoid clashes.
     public static final int NUM_SUCCESSORS = 3;
-    public static final int INTERVAL_MS = 1000; // interval to periodically call the functions
+    public static final int INTERVAL_MS = 50; // interval to periodically call the functions
 
     public static void main(String[] args) {
         System.out.println("Welcome to the Chord P2P network!");
@@ -50,13 +50,12 @@ public class Chord {
                 throw new ConnectToNodeException("contact node");
             }
 
-            node.printNode();
             Scanner userinput = new Scanner(System.in);
             while (true) {
                 System.out.println("check info or exit? type( i or e):");
                 String command = userinput.next();
                 if (command.startsWith("i")) {
-                    node.printNode();
+                    System.out.println(node);
                 } else if (command.startsWith("e")) {
                     node.terminate();
                     System.out.println("This node is leaving the chord.");
