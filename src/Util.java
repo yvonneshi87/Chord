@@ -109,20 +109,6 @@ public class Util {
         return sum % TWO_TO_M;
     }
 
-    /**
-     *  Convert a long value to a hexadecimal String
-     */
-    public static String convertLongToHex(long l) {
-        String hex = Long.toHexString(l);
-        int left = 8 - hex.length();
-        StringBuilder builder = new StringBuilder();
-        for (int i = left; i > 0; i--) {
-            builder.append("0");
-        }
-        builder.append(hex);
-        return builder.toString();
-    }
-
     public static String convertIsaToAddress(InetSocketAddress isa) {
         return isa.toString().split("/")[1];
     }

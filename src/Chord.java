@@ -1,5 +1,6 @@
 import Exceptions.ConnectToNodeException;
 import Exceptions.FindNodeIsaException;
+
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.UnknownHostException;
@@ -12,6 +13,7 @@ public class Chord {
     public static final int NUM_SUCCESSORS = 3;
     public static final int INTERVAL_MS = 100; // interval to periodically call the functions
     private static final List<Node> nodeList = new ArrayList<>();
+    private static final List<String> status = new ArrayList<>();
 
     public static void main(String[] args) {
         System.out.println("Welcome to the Chord P2P network!");
@@ -35,11 +37,9 @@ public class Chord {
                         break;
 
                     case 4:
-                        killNode();
+                        stopNode();
                         break;
-                    case 5:
-                        System.out.println("Kill all node and exit the Chord");
-                        System.exit(0);
+
                     default:
                         break;
                 }
@@ -53,7 +53,15 @@ public class Chord {
         }
     }
 
-    private static void killNode() {
+    private static void stopNode() {
+        displayCreatedNode("stop");
+        Scanner scanner = new Scanner(System.in);
+        int index = scanner.nextInt();
+        nodeList.get(index).terminateAllThreads();
+        status.set(index, "STOPPED");
+    }
+
+    private static void displayCreatedNode(String action) {
         if (nodeList.size() == 0) {
             System.out.println("You have not created any node. Now go back to menu.");
             return;
@@ -61,19 +69,9 @@ public class Chord {
         System.out.println("Nodes you have created: ");
         for (int i = 0; i < nodeList.size(); i++) {
             Node node = nodeList.get(i);
-            System.out.println("Node " + i +  " - isa: " + node.getIsa());
+            System.out.println("Node " + i + " - isa: " + node.getIsa() + " " + status.get(i));
         }
-        System.out.println("Please enter the index of the node you want to kill: ");
-        Scanner scanner = new Scanner(System.in);
-        int index = scanner.nextInt();
-        try{
-            System.out.println(nodeList.get(index));
-        }catch (Exception e){
-            System.out.println("Can't catch the node with the index you entered");
-        }
-        nodeList.get(index).killAllThreads();
-        nodeList.remove(index);
-
+        System.out.println("Please enter the index of the node you want to " + action +  ": ");
     }
 
     private static void createOrJoinRing() throws ConnectToNodeException {
@@ -84,7 +82,7 @@ public class Chord {
             Scanner scanner = new Scanner(System.in);
             String portNum = scanner.nextLine();
 
-            System.out.println("Enter ip and port (FORMAT: 127.0.0.1:8000 )for the entry point or hit enter to skip)");
+            System.out.println("Enter ip and port (FORMAT: 127.0.0.1:8000) for the entry point or hit enter to skip:");
             String existingRingArgs = scanner.nextLine();
 
             // Construct a Node instance by passing address and port number
@@ -104,6 +102,7 @@ public class Chord {
                 System.out.println("Joining the Chord ring...");
                 System.out.println(node);
                 nodeList.add(node);
+                status.add("ALIVE");
                 System.out.println("\n");
             } else {
                 throw new ConnectToNodeException(localIpAddress + " and " + portNum);
@@ -111,30 +110,16 @@ public class Chord {
         } catch (UnknownHostException | FindNodeIsaException e) {
             System.out.println(e.getMessage());
             System.out.println("Now going back to menu...");
-        } catch(ConnectToNodeException e) {
+        } catch (ConnectToNodeException e) {
             throw e;
         }
     }
 
     private static void checkInformation() {
-        if (nodeList.size() == 0) {
-            System.out.println("You have not created any node. Now go back to menu.");
-            return;
-        }
-        System.out.println("Nodes you have created: ");
-        for (int i = 0; i < nodeList.size(); i++) {
-            Node node = nodeList.get(i);
-            System.out.println("Node " + i +  " - isa: " + node.getIsa());
-        }
-        System.out.println("Please enter the index of the node you want to look up: ");
+        displayCreatedNode("check");
         Scanner scanner = new Scanner(System.in);
         int index = scanner.nextInt();
-        try{
-            System.out.println(nodeList.get(index));
-        }catch (Exception e){
-            System.out.println("Can't catch the node with the index you entered");
-        }
-
+        System.out.println(nodeList.get(index));
     }
 
     private static void query() {
@@ -169,7 +154,7 @@ public class Chord {
             System.out.println("Ip address and port: " + nodeIsa.getAddress().toString() + ":" + nodeIsa.getPort());
             System.out.println("ID and Position: " + Util.getHexPosition(Util.hashIsaToId(nodeIsa)));
             System.out.println("\n");
-        } catch (FindNodeIsaException | ConnectToNodeException e){
+        } catch (FindNodeIsaException | ConnectToNodeException e) {
             System.out.println(e.getMessage());
             System.out.println("Now going back to menu...");
         }
@@ -180,7 +165,7 @@ public class Chord {
         System.out.println("1 - Create/Join a Chord Ring");
         System.out.println("2 - Check information");
         System.out.println("3 - Query");
-        System.out.println("4 - Kill");
+        System.out.println("4 - Stop a node");
         System.out.println("5 - Exit");
     }
 

@@ -32,7 +32,6 @@ public class Listener extends Thread {
               System.out.println("No active server");
             }
         }
-
     }
 
     @Override

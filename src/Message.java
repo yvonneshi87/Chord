@@ -5,7 +5,6 @@ import java.io.PrintStream;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.Socket;
-import java.net.UnknownHostException;
 
 public class Message {
   final static private int NUM_SUCCESSORS = Chord.NUM_SUCCESSORS;
@@ -33,7 +32,6 @@ public class Message {
 
       return new InetSocketAddress(retIp, Integer.parseInt(retPort));
     } catch (IOException e) {
-      //TODO:
       return null;
     }
   }
@@ -63,10 +61,8 @@ public class Message {
       }
 
     } catch (IOException e) {
-      // TODO Auto-generated catch block
       return null;
     }
-
   }
 
   // Ask targetNode to run notify(selfNode)
@@ -89,7 +85,6 @@ public class Message {
       socket.close();
 
     } catch (IOException e) {
-      // TODO Auto-generated catch block
     }
   }
 
@@ -117,12 +112,11 @@ public class Message {
         return false;
       }
     } catch (IOException e) {
-      // TODO Auto-generated catch block
       return false;
     }
   }
 
-  public static InetSocketAddress[] requestReturnSuccessorsList(InetSocketAddress targetNodeIsa) throws UnknownHostException, IOException {
+  public static InetSocketAddress[] requestReturnSuccessorsList(InetSocketAddress targetNodeIsa) throws IOException {
     String ip = targetNodeIsa.getHostName();
     int port = targetNodeIsa.getPort();
 
@@ -140,13 +134,11 @@ public class Message {
         if (retIp.equals("null")) {
           successors[count] = null;
         } else {
-          InetSocketAddress newIsa = new InetSocketAddress(retIp, Integer.valueOf(retPort));
+          InetSocketAddress newIsa = new InetSocketAddress(retIp, Integer.parseInt(retPort));
           successors[count] = newIsa;
         }
-        
         count++;
       }
-
       in.close();
       out.close();
       socket.close();
@@ -165,13 +157,13 @@ public class Message {
 
       if (messageType == MessageType.FIND_SUCCESSOR) {
         // Requested to run find_successor(id) on selfNode
-        long id = Long.valueOf(in.readLine());
+        long id = Long.parseLong(in.readLine());
         InetSocketAddress retNodeIsa = selfNode.findSuccessor(id);
         String retIp = retNodeIsa.getHostName();
         int port = retNodeIsa.getPort();
 
         out.println(retIp);
-        out.println(String.valueOf(port));
+        out.println(port);
         in.close();
         out.close();
         socket.close();
@@ -183,7 +175,7 @@ public class Message {
           int port = retNodeIsa.getPort();
 
           out.println(retIp);
-          out.println(String.valueOf(port));
+          out.println(port);
         } else {
           out.println("null");
           out.println("null");
@@ -195,7 +187,7 @@ public class Message {
         return true;
       } else if (messageType == MessageType.NOTIFY) {
         String nPrimeIp = in.readLine();
-        int nPrimePort = Integer.valueOf(in.readLine());
+        int nPrimePort = Integer.parseInt(in.readLine());
 
         InetSocketAddress nPrimeIsa = new InetSocketAddress(nPrimeIp, nPrimePort);
         selfNode.notify(nPrimeIsa);
@@ -222,7 +214,7 @@ public class Message {
             int port = retNodeIsa.getPort();
 
             out.println(retIp);
-            out.println(String.valueOf(port));
+            out.println(port);
           }
           count++;
         }
@@ -237,12 +229,9 @@ public class Message {
         socket.close();
         return false;
       }
-
     } catch (Exception e) {
-      // TODO Auto-generated catch block
       e.printStackTrace();
     }
-
     return true;
   }
 

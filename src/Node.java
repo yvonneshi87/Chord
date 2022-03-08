@@ -179,21 +179,14 @@ public class Node {
     }
 
     /**
-     * Start all the threads in the node
+     * Terminate all the threads in the node
      */
-    public void killAllThreads() {
-        if(listener != null){
-            listener.terminate();
-        }
-        if(stabilization != null){
-            stabilization.terminate();
-        }
-        if(fingerTableFixing != null){
-            fingerTableFixing.terminate();
-        }
-        if(predecessorChecking != null){
-            predecessorChecking.terminate();
-        }
+    public void terminateAllThreads() {
+        listener.terminate();
+        stabilization.terminate();
+        fingerTableFixing.terminate();
+        predecessorChecking.terminate();
+        predecessorChecking.terminate();
     }
 
     /**
@@ -237,7 +230,7 @@ public class Node {
         for (int i = 0; i < NUM_SUCCESSORS; i++) {
             long ithStartId = Util.ithStartId(id, i);
             InetSocketAddress succIsa = successors[i];
-            sb.append(i).append("\t").append(Util.convertLongToHex(ithStartId)).append("\t");
+            sb.append(i).append("\t").append("(").append(ithStartId).append(")").append("\t\t\t");
             if (succIsa != null) {
                 long succId = Util.hashIsaToId(succIsa);
                 sb.append(Util.convertIsaToAddress(succIsa)).append("\t\t").append(succId);
@@ -250,7 +243,7 @@ public class Node {
         for (int i = 0; i < M; i++) {
             long ithStartId = Util.ithStartId(id, i);
             InetSocketAddress entryIsa = fingerTable[i];
-            sb.append(i).append("\t").append(Util.convertLongToHex(ithStartId)).append("\t");
+            sb.append(i).append("\t").append("(").append(ithStartId).append(")").append("\t\t\t");
             if (entryIsa != null) {
                 long entryId = Util.hashIsaToId(entryIsa);
                 sb.append(Util.convertIsaToAddress(entryIsa)).append("\t\t").append(entryId);
@@ -289,10 +282,6 @@ public class Node {
 
     public InetSocketAddress getIthSuccessor(int i) {
         return successors[i];
-    }
-
-    public String getHexPosition() {
-        return hexPosition;
     }
 
     public synchronized void setPredecessor(InetSocketAddress isa) {
