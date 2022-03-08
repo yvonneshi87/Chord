@@ -6,7 +6,7 @@ public class Chord {
     // Change the settings here for convenience
     public static final int M = 4; // Set M to a smaller value for debugging, or a larger value to avoid clashes.
     public static final int NUM_SUCCESSORS = 3;
-    public static final int INTERVAL_MS = 1000; // interval to periodically call the functions
+    public static final int INTERVAL_MS = 100; // interval to periodically call the functions
 
     public static void main(String[] args) {
         System.out.println("Welcome to the Chord P2P network!");
