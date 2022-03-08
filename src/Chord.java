@@ -11,7 +11,7 @@ public class Chord {
     public static final int M = 4; // Set M to a smaller value for debugging, or a larger value to avoid clashes.
     public static final int NUM_SUCCESSORS = 3;
     public static final int INTERVAL_MS = 100; // interval to periodically call the functions
-    private static List<Node> nodeList = new ArrayList<>();
+    private static final List<Node> nodeList = new ArrayList<>();
 
     public static void main(String[] args) {
         System.out.println("Welcome to the Chord P2P network!");
@@ -55,9 +55,7 @@ public class Chord {
             Scanner scanner = new Scanner(System.in);
             String portNum = scanner.nextLine();
 
-            System.out.println("If you want your new node to join an existing ring, " +
-                    "enter ip and port for the entry point (hit enter to skip),");
-            System.out.println("FORMAT: 127.0.0.1:8000 ");
+            System.out.println("Enter ip and port (FORMAT: 127.0.0.1:8000 )for the entry point or hit enter to skip)");
             String existingRingArgs = scanner.nextLine();
 
             // Construct a Node instance by passing address and port number
