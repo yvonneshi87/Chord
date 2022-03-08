@@ -179,6 +179,24 @@ public class Node {
     }
 
     /**
+     * Start all the threads in the node
+     */
+    public void killAllThreads() {
+        if(listener != null){
+            listener.terminate();
+        }
+        if(stabilization != null){
+            stabilization.terminate();
+        }
+        if(fingerTableFixing != null){
+            fingerTableFixing.terminate();
+        }
+        if(predecessorChecking != null){
+            predecessorChecking.terminate();
+        }
+    }
+
+    /**
      * Redefine print of node's format
      *
      * @return eg. an output format:
