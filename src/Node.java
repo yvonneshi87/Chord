@@ -4,7 +4,6 @@ public class Node {
     private static final int NUM_SUCCESSORS = Chord.NUM_SUCCESSORS; // Number of successors to keep in each node
     private static final int M = Chord.M; // Number of bits used
 
-    private String ipAddress;
     private String portNum;
     private InetSocketAddress isa;
     private long id;
@@ -18,7 +17,6 @@ public class Node {
     private PredecessorChecking predecessorChecking;
 
     public Node(String ipAddress, String portNum) {
-        this.ipAddress = ipAddress;
         this.portNum = portNum;
         isa = Util.getInetSocketAddress(ipAddress, portNum);
         id = Util.getId(isa);
@@ -291,10 +289,6 @@ public class Node {
 
     public long getId() {
         return id;
-    }
-
-    public String getIp() {
-        return ipAddress;
     }
 
     public int getPort() {

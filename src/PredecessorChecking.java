@@ -7,8 +7,10 @@ public class PredecessorChecking extends Thread {
         active = true;
     }
 
+    /*
+    * This function is called periodically to check whether the node's predecessor has failed.
+    **/
     @Override
-    // called periodically. checks whether predecessor has failed.
     public void run() {
         while (active) {
             if (node.getPredecessor() != null && node.getPredecessor() != node.getIsa()
