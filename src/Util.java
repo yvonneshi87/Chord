@@ -55,6 +55,32 @@ public class Util {
     } // end of getId
 
     /**
+     * This method hashes string key to 160 bit String,
+     * hashText is 160 bits long (= 40 hex digits * 4 bit per hex digit)
+     * truncates hashText to M bits
+     * return peer id between 0 and (2^M - 1) by converting truncatedHashText to a
+     * long number
+     *
+     * @param key
+     * @return
+     *         eg.
+     *         input:
+     *         output:
+     */
+    public static long getIdKey(String key) {
+        try {
+            MessageDigest md = MessageDigest.getInstance("SHA-1");
+            byte[] messageDigest = md.digest(key.getBytes());
+            BigInteger no = new BigInteger(1, messageDigest);
+            String hashText = no.toString(16);
+            String truncatedHashText = hashText.substring(0, M / 4);
+            return Long.parseLong(truncatedHashText, 16);
+        } catch (NoSuchAlgorithmException e) {
+            return -1;
+        }
+    } // end of getIdKey
+
+    /**
      * computer an id's position in 2**M numbers
      * 
      * @return
