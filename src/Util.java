@@ -34,11 +34,8 @@ public class Util {
      */
     public static InetSocketAddress getInetSocketAddress(String fullAddress) {
         Matcher matcher = ADDRESS_PATTERN.matcher(fullAddress);
-//        System.out.println(matcher.find());
         if (matcher.find()) {
             String[] spiltStr = fullAddress.split(":");
-            System.out.println("aaaa" + spiltStr[0]);
-            System.out.println("aaaa" + spiltStr[1]);
             return getInetSocketAddress(spiltStr[0], spiltStr[1]);
         } else {
             return null;
@@ -79,7 +76,7 @@ public class Util {
      * computer an id's position in 2**M numbers
      */
     public static String getHexPosition(long id) {
-        return id + "\t\t" + String.format("%.0f%%", (float) id / TWO_TO_M * 100);
+        return String.format("%.0f%%", (float) id / TWO_TO_M * 100);
     }
 
     /**
@@ -100,17 +97,13 @@ public class Util {
      */
     public static long ringAddition(long x, long y) {
         long result = x + y;
-        if (result >= TWO_TO_M) {
-            result -= TWO_TO_M;
-        }
-        return result;
+        return (result >= TWO_TO_M) ? (result - TWO_TO_M) : result;
     }
 
     /***
      * calculate (id + 2 ^ i） % 2 ^ M
      */
     public static long ithStartId(long id, int i) {
-//        return (long) ((id + Math.pow(2, i)) % Math.pow(2, M));
         long twoToI = 1L << i;
         long sum = twoToI + id;
         return sum % TWO_TO_M;
@@ -128,5 +121,9 @@ public class Util {
         }
         builder.append(hex);
         return builder.toString();
+    }
+
+    public static String convertIsaToAddress(InetSocketAddress isa) {
+        return isa.toString().split("/")[1];
     }
 }
