@@ -67,42 +67,26 @@ public class Node {
         if (nPrimeIsa == null) {
             return;
         }
-        if (predecessor == null || predecessor == isa
+        if (predecessor == null || predecessor.equals(isa)
                 || Util.isInInterval(Util.getId(predecessor), id, Util.getId(nPrimeIsa))) {
-            predecessor = nPrimeIsa;
+            // If this is the only node in the ring, set its predecessor to null
+            if (nPrimeIsa.equals(isa)) {
+                predecessor = null;
+            } else {
+                predecessor = nPrimeIsa;
+            }
         }
     }
 
-    /**
-     * Notified that the newPredecessor is our predecessor.
-     * compare the newPredecessor and oldPredecessor's position, renew the predecessor as the closer one.
-     * @param newPredecessor
-     */
-    // public void notified(InetSocketAddress newPredecessor) {
-    //     if (newPredecessor == null || predecessor.equals(newPredecessor)) {
-    //         predecessor = newPredecessor;
-    //         return;
-    //     }
-
-    //     long oldPredecessorId = Util.getId(predecessor);
-    //     long newPredecessorId = Util.getId(newPredecessor);
-
-    //     long relativeId = Util.getRelativeId(id, oldPredecessorId); // id - oldPre
-    //     long newPredecessorRelativeId = Util.getRelativeId(newPredecessorId, oldPredecessorId);
-
-    //     if (newPredecessorRelativeId < relativeId) { // new predecessor is near to id than old pre
-    //         predecessor = newPredecessor;
-    //     }
-
-    // }
 
     // Find the successor of id
     public InetSocketAddress findSuccessor(long id) {
-        if (Util.isInInterval(this.id, Util.getId(successors[0]), id) || id == Util.getId(successors[0])) {
+        if (successors[0] != null && (Util.isInInterval(this.id, Util.getId(successors[0]), id)
+                || id == Util.getId(successors[0]))) {
             return this.successors[0];
         } else {
             InetSocketAddress nPrimeIsa = closestPreceding(id);
-            if (nPrimeIsa == isa) {
+            if (nPrimeIsa.equals(isa)) {
                 return isa;
             } else {
                 return Message.requestFindSuccessor(id, nPrimeIsa);
@@ -110,17 +94,58 @@ public class Node {
         }
     }
 
-    public InetSocketAddress findPredecessor(long id) {
-        // TODO
-        return null;
-    }
-
     // search the local table for the highest predecessor of id
     public InetSocketAddress closestPreceding(long id) {
-        for (int i = M - 1; i >= 0; i--) {
-            if (this.fingerTable[i] != null && Util.isInInterval(this.id, id, Util.getId(this.fingerTable[i]))) {
-                return fingerTable[i];
+        int m = M - 1; // current entry to try in the finger table
+        int r = NUM_SUCCESSORS - 1; // current entry to try in the successor list
+        while (m >= 0 || r >= 0) {
+            if (m >= 0 && !(this.fingerTable[m] != null
+                    && Util.isInInterval(this.id, id, Util.getId(this.fingerTable[m])))) {
+                // This finger table entry is not before id, or it is null, try next
+                m--;
+                continue;
             }
+
+            if (r >= 0 && !(this.successors[r] != null
+                    && Util.isInInterval(this.id, id, Util.getId(this.successors[r])))) {
+                // This successor entry is not before id, or it is null, try next
+                r--;
+                continue;
+            }
+
+            boolean fingerIsBetter = true;
+            if (m < 0 && r < 0) {
+                // could not find a suitable entry in either, just return this node itself
+                return this.isa;
+            }
+            if (m < 0) {
+                fingerIsBetter = false;
+            } else if (r < 0) {
+                fingerIsBetter = true;
+            } else {
+                // Check who is closer to id
+                if (Util.isInInterval(this.id, Util.getId(fingerTable[m]), Util.getId(successors[r]))) {
+                    fingerIsBetter = true;
+                } else {
+                    fingerIsBetter = false;
+                }
+            }
+
+            // If the closest is not responding, then we try to find the next closest
+            if (fingerIsBetter) {
+                if (Message.requestPing(fingerTable[m])) {
+                    return fingerTable[m];
+                } else {
+                    m--;
+                }
+            } else {
+                if (Message.requestPing(successors[r])) {
+                    return successors[r];
+                } else {
+                    r--;
+                }
+            }
+
         }
         return this.isa;
     }
@@ -213,6 +238,10 @@ public class Node {
      * Decription      |       Ip_address       |      id       |      location_in_the_chord
      * Local :                 10.0.0.34:9887          14              88%
      * PREDECESSOR:            10.0.0.34:9867          13              81%
+     * SUCCESSOR LIST:
+     * 0       0000000f        10.0.0.34:9888          12              75%
+     * 1       00000000        10.0.0.34:9888          12              75%
+     * 2       00000002        10.0.0.34:9888          12              75%
      * FINGER TABLE:
      * 0       0000000f        10.0.0.34:9888          12              75%
      * 1       00000000        10.0.0.34:9888          12              75%
@@ -231,7 +260,18 @@ public class Node {
                   +Util.getHexPosition(Util.getId(predecessor)) +"\n");
         else
             sb.append("PREDECESSOR:\t\tNULL\n");
-        sb.append("FINGER TABLE:\n");
+
+        sb.append("\nSUCCESSOR LIST:\n");
+        for (int i = 0; i < NUM_SUCCESSORS; i++) {
+            long ithStartId  = Util.ithStartId(Util.getId(isa),i);
+            InetSocketAddress f = successors[i];
+            sb.append(i+"\t"+ Util.longToHex(ithStartId)+"\t");
+            if (f!= null)
+                sb.append(f.toString().split("/")[1]+"\t\t"+Util.getHexPosition(Util.getId(f)) + "\n");
+            else
+                sb.append("NULL\n");
+        }
+        sb.append("\nFINGER TABLE:\n");
         for (int i = 0; i < M; i++) {
             long ithStartId  = Util.ithStartId(Util.getId(isa),i);
             InetSocketAddress f = fingerTable[i];
@@ -269,6 +309,10 @@ public class Node {
         return successors[0];
     }
 
+    public InetSocketAddress getIthSuccessor(int i) {
+        return successors[i];
+    }
+
     public synchronized void setPredecessor(InetSocketAddress isa) {
         predecessor = isa;
     }
@@ -276,5 +320,4 @@ public class Node {
     public synchronized void setIthSuccessor(int i, InetSocketAddress isa) {
         successors[i] = isa;
     }
-
 }

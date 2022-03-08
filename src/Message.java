@@ -5,11 +5,12 @@ import java.io.PrintStream;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.Socket;
+import java.net.UnknownHostException;
 
 public class Message {
-
+  final static private int NUM_SUCCESSORS = Chord.NUM_SUCCESSORS;
   enum MessageType {
-    FIND_SUCCESSOR, RETURN_PREDECESSOR, NOTIFY, PING
+    FIND_SUCCESSOR, RETURN_PREDECESSOR, NOTIFY, PING, RETURN_SUCCESSOR_LIST
   }
 
   // Ask targetNode to run findSuccessor(id), return the successor's isa
@@ -32,7 +33,7 @@ public class Message {
 
       return new InetSocketAddress(retIp, Integer.parseInt(retPort));
     } catch (IOException e) {
-      // TODO:
+      //TODO:
       return null;
     }
   }
@@ -97,7 +98,6 @@ public class Message {
     String ip = targetNodeIsa.getHostName();
     int port = targetNodeIsa.getPort();
     try {
-
       Socket socket = new Socket(ip, port);
       // wait for 3 seconds
       socket.setSoTimeout(3000);
@@ -120,6 +120,37 @@ public class Message {
       // TODO Auto-generated catch block
       return false;
     }
+  }
+
+  public static InetSocketAddress[] requestReturnSuccessorsList(InetSocketAddress targetNodeIsa) throws UnknownHostException, IOException {
+    String ip = targetNodeIsa.getHostName();
+    int port = targetNodeIsa.getPort();
+
+    InetSocketAddress[] successors = new InetSocketAddress[NUM_SUCCESSORS];
+
+      Socket socket = new Socket(ip, port);
+      PrintStream out = new PrintStream(socket.getOutputStream());
+      BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+      out.println(MessageType.RETURN_SUCCESSOR_LIST);
+
+      int count = 0;
+      while (count < NUM_SUCCESSORS) {
+        String retIp = in.readLine();
+        String retPort = in.readLine();
+        if (retIp.equals("null")) {
+          successors[count] = null;
+        } else {
+          InetSocketAddress newIsa = new InetSocketAddress(retIp, Integer.valueOf(retPort));
+          successors[count] = newIsa;
+        }
+        
+        count++;
+      }
+
+      in.close();
+      out.close();
+      socket.close();
+      return successors;
   }
 
   // Receive one incoming message, parse it, and run the corresponding method on
@@ -179,6 +210,27 @@ public class Message {
         out.close();
         socket.close();
         return true;
+      } else if (messageType == MessageType.RETURN_SUCCESSOR_LIST) {
+        int count = 0;
+        while (count < NUM_SUCCESSORS) {
+          if (selfNode.getIthSuccessor(count) == null) {
+            out.println("null");
+            out.println("null");
+          } else {
+            InetSocketAddress retNodeIsa = selfNode.getIthSuccessor(count);
+            String retIp = retNodeIsa.getHostName();
+            int port = retNodeIsa.getPort();
+
+            out.println(retIp);
+            out.println(String.valueOf(port));
+          }
+          count++;
+        }
+        
+        in.close();
+        out.close();
+        socket.close();
+        return true; 
       } else {
         in.close();
         out.close();
