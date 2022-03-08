@@ -19,7 +19,7 @@ public class Chord {
         Scanner scanner = new Scanner(System.in);
         int option = scanner.nextInt();
         try {
-            while (option != 4) {
+            while (option != 5) {
                 System.out.println("\n");
                 switch (option) {
                     case 1:
@@ -34,6 +34,12 @@ public class Chord {
                         query();
                         break;
 
+                    case 4:
+                        killNode();
+                        break;
+                    case 5:
+                        System.out.println("Kill all node and exit the Chord");
+                        System.exit(0);
                     default:
                         break;
                 }
@@ -45,6 +51,29 @@ public class Chord {
             System.out.println("Now exit.");
             System.exit(0);
         }
+    }
+
+    private static void killNode() {
+        if (nodeList.size() == 0) {
+            System.out.println("You have not created any node. Now go back to menu.");
+            return;
+        }
+        System.out.println("Nodes you have created: ");
+        for (int i = 0; i < nodeList.size(); i++) {
+            Node node = nodeList.get(i);
+            System.out.println("Node " + i +  " - isa: " + node.getIsa());
+        }
+        System.out.println("Please enter the index of the node you want to kill: ");
+        Scanner scanner = new Scanner(System.in);
+        int index = scanner.nextInt();
+        try{
+            System.out.println(nodeList.get(index));
+        }catch (Exception e){
+            System.out.println("Can't catch the node with the index you entered");
+        }
+        nodeList.get(index).killAllThreads();
+        nodeList.remove(index);
+
     }
 
     private static void createOrJoinRing() throws ConnectToNodeException {
@@ -100,7 +129,12 @@ public class Chord {
         System.out.println("Please enter the index of the node you want to look up: ");
         Scanner scanner = new Scanner(System.in);
         int index = scanner.nextInt();
-        System.out.println(nodeList.get(index));
+        try{
+            System.out.println(nodeList.get(index));
+        }catch (Exception e){
+            System.out.println("Can't catch the node with the index you entered");
+        }
+
     }
 
     private static void query() {
@@ -146,7 +180,8 @@ public class Chord {
         System.out.println("1 - Create/Join a Chord Ring");
         System.out.println("2 - Check information");
         System.out.println("3 - Query");
-        System.out.println("4 - Exit");
+        System.out.println("4 - Kill");
+        System.out.println("5 - Exit");
     }
 
 }

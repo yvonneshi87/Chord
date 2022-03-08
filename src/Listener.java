@@ -24,6 +24,17 @@ public class Listener extends Thread {
         }
     }
 
+    private void stopServer(){
+        if(serverSocket != null){
+            try{
+                serverSocket.close();
+            }catch (Exception e){
+              System.out.println("No active server");
+            }
+        }
+
+    }
+
     @Override
     // Run socket to accept
     public void run() {
@@ -37,12 +48,15 @@ public class Listener extends Thread {
                 talker.start();
             } catch (IOException e) {
                 // TODO: REWRITE EXCEPTION HANDLER
-                throw new RuntimeException("Can't accept message ", e);
+                //throw new RuntimeException("Can't accept message ", e);
+                //System.out.println("Server die.");
             }
         }
     }
 
     public void terminate() {
         active = false;
+        stopServer();
+        System.out.println("Server terminated");
     }
 }
