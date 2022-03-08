@@ -16,6 +16,9 @@ public class Node {
     private FingerTableFixing fingerTableFixing;
     private PredecessorChecking predecessorChecking;
 
+    /**
+     * Constructor
+     */
     public Node(String ipAddress, String portNum) {
         this.portNum = portNum;
         isa = Util.getInetSocketAddress(ipAddress, portNum);
@@ -29,11 +32,13 @@ public class Node {
         predecessorChecking = new PredecessorChecking(this);
     }
 
-    // Join a Chord ring containing node n', meaning n' is the entry point
-    // n.join(n′) {
-    // predecessor = nil;
-    // successor = n′.find successor(n);
-    // }
+    /**
+     * Join a Chord ring containing node n', meaning n' is the entry point
+     * n.join(n′) {
+     *      predecessor = nil;
+     *      successor = n′.find successor(n);
+     * }
+     */
     public synchronized boolean join(InetSocketAddress nPrimeIsa) {
         if (!nPrimeIsa.equals(isa)) {
             successors[0] = Message.requestFindSuccessor(id, nPrimeIsa);
@@ -47,21 +52,20 @@ public class Node {
         return true;
     }
 
-    // n′ thinks it might be our predecessor.
-    // n.notify(n′) {
-    // if (predecessor is nil or n′ ∈ (predecessor, n)) {
-    // predecessor = n′;
-    // }
-    // }
-    /*
-     * Bascially, what's happening in this function is n' believes it is the
-     * predecessor of n.
-     * So it will notify n like 'hey dude, I am your predecessor!'
-     * Once notified, n will check if n' is null or n' is indeed its predecessor.
+    /**
+     * n′ thinks it might be our predecessor.
+     * n.notify(n′) {
+     *      if (predecessor is nil or n′ ∈ (predecessor, n)) {
+     *          predecessor = n′;
+     *      }
+     * }
+     *
+     * What's happening in this function is n' believes it is the predecessor of n.
+     * So n' will notify n like 'hey dude, I am your predecessor!'
+     * Once notified, n will check if its current predecessor is null or n' is indeed its predecessor.
      * If true then assign n' to predecessor of n.
      */
     public synchronized void notify(InetSocketAddress nPrimeIsa) {
-        // System.out.println("notify: " + nPrimeIsa);
         if (nPrimeIsa == null) {
             return;
         }
@@ -76,8 +80,9 @@ public class Node {
         }
     }
 
-
-    // Find the successor of id
+    /**
+     * Find the successor of id
+     */
     public InetSocketAddress findSuccessor(long id) {
         if (successors[0] != null && (Util.isInInterval(this.id, Util.getId(successors[0]), id)
                 || id == Util.getId(successors[0]))) {
@@ -92,7 +97,9 @@ public class Node {
         }
     }
 
-    // search the local table for the highest predecessor of id
+    /**
+     * search the local table for the highest predecessor of id
+     */
     public InetSocketAddress closestPreceding(long id) {
         int m = M - 1; // current entry to try in the finger table
         int r = NUM_SUCCESSORS - 1; // current entry to try in the successor list
@@ -148,53 +155,16 @@ public class Node {
         return this.isa;
     }
 
-    // Update the ith entry of the finger table
-    // If the newIsa is indeed the new successor, notify it.
-    // TODO: WE NEED TO TAKE A CLOSER LOOK AT SYNCHRONIZATION.
+    /**
+     * Update the ith entry of the finger table
+     * If the newIsa is indeed the new successor, notify it.
+     */
     public synchronized void updateFingerTableEntry(int i, InetSocketAddress newIsa) {
         fingerTable[i] = newIsa;
 
         if (i == 0 && newIsa != null && !newIsa.equals(isa)) {
             notify(newIsa);
         }
-    }
-
-    private synchronized void deleteSuccessor() {
-        InetSocketAddress successor = fingerTable[0];
-        if (successor == null) {
-            return;
-        }
-        int i = 31;
-        for (; i >= 0; i--) {
-            if (fingerTable[i] != null && fingerTable[i].equals(successor)) {
-                break;
-            }
-        }
-
-        for (int j = i; j >= 0; j--) {
-            updateFingerTableEntry(j, null);
-        }
-
-        if (predecessor != null && predecessor.equals(successor)) {
-            predecessor = null;
-        }
-
-        // TODO
-    }
-
-    private synchronized void removeNodeFromFingerTable(InetSocketAddress removedIsa) {
-        for (int i = 0; i < M; i++) {
-            if (fingerTable[i] != null && fingerTable[i].equals(removedIsa)) {
-                fingerTable[i] = null;
-            }
-        }
-    }
-
-    // TODO: need to implement logics for multiple successors
-    private void findSuccessors(long id) {
-        // for (int i = 0; i < Chord.NUM_SUCCESSORS; i++) {
-        // successors[i] = findSuccessor(id);
-        // }
     }
 
     /**
@@ -208,27 +178,6 @@ public class Node {
     }
 
     /**
-     * Terminate all the threads in the node.
-     */
-    public void terminate() {
-        if (listener != null)
-            listener.terminate();
-        if (fingerTableFixing != null)
-            fingerTableFixing.terminate();
-        if (stabilization != null)
-            stabilization.terminate();
-        if (predecessorChecking != null)
-            predecessorChecking.terminate();
-    }
-
-    private void terminateAllThreads() {
-        listener.terminate();
-        stabilization.terminate();
-        fingerTableFixing.terminate();
-        predecessorChecking.terminate();
-    }
-
-    /***
      * Redefine print of node's format
      * @return
      * eg. an output format:
@@ -283,6 +232,10 @@ public class Node {
         return sb.toString();
     }
 
+    /**
+     * Getters and setters
+     */
+
     public InetSocketAddress getIsa() {
         return isa;
     }
@@ -314,4 +267,44 @@ public class Node {
     public synchronized void setIthSuccessor(int i, InetSocketAddress isa) {
         successors[i] = isa;
     }
+
+    /**
+    private synchronized void deleteSuccessor() {
+        InetSocketAddress successor = fingerTable[0];
+        if (successor == null) {
+            return;
+        }
+        int i = 31;
+        for (; i >= 0; i--) {
+            if (fingerTable[i] != null && fingerTable[i].equals(successor)) {
+                break;
+            }
+        }
+
+        for (int j = i; j >= 0; j--) {
+            updateFingerTableEntry(j, null);
+        }
+
+        if (predecessor != null && predecessor.equals(successor)) {
+            predecessor = null;
+        }
+
+        // TODO
+    }
+
+    private synchronized void removeNodeFromFingerTable(InetSocketAddress removedIsa) {
+        for (int i = 0; i < M; i++) {
+            if (fingerTable[i] != null && fingerTable[i].equals(removedIsa)) {
+                fingerTable[i] = null;
+            }
+        }
+    }
+
+    // TODO: need to implement logics for multiple successors
+    private void findSuccessors(long id) {
+        // for (int i = 0; i < Chord.NUM_SUCCESSORS; i++) {
+        // successors[i] = findSuccessor(id);
+        // }
+    }
+     */
 }

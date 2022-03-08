@@ -57,7 +57,6 @@ public class Chord {
                 if (command.startsWith("i")) {
                     System.out.println(node);
                 } else if (command.startsWith("e")) {
-                    node.terminate();
                     System.out.println("This node is leaving the chord.");
                     System.exit(0);
                 }
