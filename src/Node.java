@@ -22,7 +22,7 @@ public class Node {
     public Node(String ipAddress, String portNum) {
         this.portNum = portNum;
         isa = Util.getInetSocketAddress(ipAddress, portNum);
-        id = Util.getId(isa);
+        id = Util.hashIsaToId(isa);
         fingerTable = new InetSocketAddress[M];
         predecessor = null;
         successors = new InetSocketAddress[NUM_SUCCESSORS];
@@ -70,7 +70,7 @@ public class Node {
             return;
         }
         if (predecessor == null || predecessor.equals(isa)
-                || Util.isInInterval(Util.getId(predecessor), id, Util.getId(nPrimeIsa))) {
+                || Util.isInInterval(Util.hashIsaToId(predecessor), id, Util.hashIsaToId(nPrimeIsa))) {
             // If this is the only node in the ring, set its predecessor to null
             if (nPrimeIsa.equals(isa)) {
                 predecessor = null;
@@ -84,8 +84,8 @@ public class Node {
      * Find the successor of id
      */
     public InetSocketAddress findSuccessor(long id) {
-        if (successors[0] != null && (Util.isInInterval(this.id, Util.getId(successors[0]), id)
-                || id == Util.getId(successors[0]))) {
+        if (successors[0] != null && (Util.isInInterval(this.id, Util.hashIsaToId(successors[0]), id)
+                || id == Util.hashIsaToId(successors[0]))) {
             return this.successors[0];
         } else {
             InetSocketAddress nPrimeIsa = closestPreceding(id);
@@ -105,14 +105,14 @@ public class Node {
         int r = NUM_SUCCESSORS - 1; // current entry to try in the successor list
         while (m >= 0 || r >= 0) {
             if (m >= 0 && !(this.fingerTable[m] != null
-                    && Util.isInInterval(this.id, id, Util.getId(this.fingerTable[m])))) {
+                    && Util.isInInterval(this.id, id, Util.hashIsaToId(this.fingerTable[m])))) {
                 // This finger table entry is not before id, or it is null, try next
                 m--;
                 continue;
             }
 
             if (r >= 0 && !(this.successors[r] != null
-                    && Util.isInInterval(this.id, id, Util.getId(this.successors[r])))) {
+                    && Util.isInInterval(this.id, id, Util.hashIsaToId(this.successors[r])))) {
                 // This successor entry is not before id, or it is null, try next
                 r--;
                 continue;
@@ -129,7 +129,7 @@ public class Node {
                 fingerIsBetter = true;
             } else {
                 // Check who is closer to id
-                if (Util.isInInterval(this.id, Util.getId(fingerTable[m]), Util.getId(successors[r]))) {
+                if (Util.isInInterval(this.id, Util.hashIsaToId(fingerTable[m]), Util.hashIsaToId(successors[r]))) {
                     fingerIsBetter = true;
                 } else {
                     fingerIsBetter = false;
@@ -201,30 +201,30 @@ public class Node {
         StringBuilder sb = new StringBuilder();
         sb.append("___*___*___*___*___*___*___*___NODE___INFO___*___*___*___*___*___*___*___*___*___*___\n");
         sb.append("Decription\t|\tIp_address\t |\tid\t |\tlocation_in_the_chord\n");
-        sb.append("Local :\t\t\t" + isa.toString().split("/")[1] +"\t\t"+Util.getHexPosition(Util.getId(isa))+"\n");
+        sb.append("Local :\t\t\t" + isa.toString().split("/")[1] +"\t\t"+Util.getHexPosition(Util.hashIsaToId(isa))+"\n");
         if (predecessor != null)
             sb.append("PREDECESSOR:\t\t"+predecessor.toString().split("/")[1]+"\t\t"
-                  +Util.getHexPosition(Util.getId(predecessor)) +"\n");
+                  +Util.getHexPosition(Util.hashIsaToId(predecessor)) +"\n");
         else
             sb.append("PREDECESSOR:\t\tNULL\n");
 
         sb.append("\nSUCCESSOR LIST:\n");
         for (int i = 0; i < NUM_SUCCESSORS; i++) {
-            long ithStartId  = Util.ithStartId(Util.getId(isa),i);
+            long ithStartId  = Util.ithStartId(Util.hashIsaToId(isa),i);
             InetSocketAddress f = successors[i];
-            sb.append(i+"\t"+ Util.longToHex(ithStartId)+"\t");
+            sb.append(i+"\t"+ Util.convertLongToHex(ithStartId)+"\t");
             if (f!= null)
-                sb.append(f.toString().split("/")[1]+"\t\t"+Util.getHexPosition(Util.getId(f)) + "\n");
+                sb.append(f.toString().split("/")[1]+"\t\t"+Util.getHexPosition(Util.hashIsaToId(f)) + "\n");
             else
                 sb.append("NULL\n");
         }
         sb.append("\nFINGER TABLE:\n");
         for (int i = 0; i < M; i++) {
-            long ithStartId  = Util.ithStartId(Util.getId(isa),i);
+            long ithStartId  = Util.ithStartId(Util.hashIsaToId(isa),i);
             InetSocketAddress f = fingerTable[i];
-            sb.append(i+"\t"+ Util.longToHex(ithStartId)+"\t");
+            sb.append(i+"\t"+ Util.convertLongToHex(ithStartId)+"\t");
             if (f!= null)
-                sb.append(f.toString().split("/")[1]+"\t\t"+Util.getHexPosition(Util.getId(f)) + "\n");
+                sb.append(f.toString().split("/")[1]+"\t\t"+Util.getHexPosition(Util.hashIsaToId(f)) + "\n");
             else
                 sb.append("NULL\n");
         }

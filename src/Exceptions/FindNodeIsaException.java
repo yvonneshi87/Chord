@@ -1,7 +1,7 @@
 package Exceptions;
 
 public class FindNodeIsaException extends Exception {
-    public FindNodeIsaException(String nodeStr) {
-        super("Fatal error when finding isa of " + nodeStr + ". Now exit.");
+    public FindNodeIsaException(String isaInfo) {
+        super("Fatal error when finding isa of " + isaInfo);
     }
 }

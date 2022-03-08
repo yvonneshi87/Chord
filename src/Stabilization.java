@@ -46,7 +46,7 @@ public class Stabilization extends Thread {
             }
             // update successor if necessary
             if (x != null && (node.getSuccessor() == null || node.getSuccessor().equals(node.getIsa())
-                    || Util.isInInterval(node.getId(), Util.getId(node.getSuccessor()), Util.getId(x)))) {
+                    || Util.isInInterval(node.getId(), Util.hashIsaToId(node.getSuccessor()), Util.hashIsaToId(x)))) {
                 node.setIthSuccessor(0, x);
             }
             // notify succcessor that I am its predecessor
