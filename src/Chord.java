@@ -6,12 +6,14 @@ import java.net.InetSocketAddress;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 import java.util.Scanner;
 
 public class Chord {
-    public static final int M = 4; // Set M to a smaller value for debugging, or a larger value to avoid clashes.
+    public static final int M = 8; // Set M to a smaller value for debugging, or a larger value to avoid clashes.
     public static final int NUM_SUCCESSORS = 3;
     public static final int INTERVAL_MS = 100; // interval to periodically call the functions
+    public static final int NUM_SIMULATION = 500; // Number of runs to simulate
     private static final List<Node> nodeList = new ArrayList<>();
     private static final List<String> status = new ArrayList<>();
 
@@ -21,7 +23,7 @@ public class Chord {
         Scanner scanner = new Scanner(System.in);
         int option = scanner.nextInt();
         try {
-            while (option != 5) {
+            while (option != 6) {
                 System.out.println("\n");
                 switch (option) {
                     case 1:
@@ -40,12 +42,17 @@ public class Chord {
                         stopNode();
                         break;
 
+                    case 5:
+                        simulateQueryTime();
+                        break;
+
                     default:
                         break;
                 }
                 printMenu();
                 option = scanner.nextInt();
             }
+            System.exit(0);
         } catch (ConnectToNodeException e) {
             System.out.println(e.getMessage());
             System.out.println("Now exit.");
@@ -63,7 +70,7 @@ public class Chord {
 
     private static void displayCreatedNode(String action) {
         if (nodeList.size() == 0) {
-            System.out.println("You have not created any node. Now go back to menu.");
+            System.out.println("You have not created any node. Now going back to menu.");
             return;
         }
         System.out.println("Nodes you have created: ");
@@ -71,7 +78,7 @@ public class Chord {
             Node node = nodeList.get(i);
             System.out.println("Node " + i + " - isa: " + node.getIsa() + " " + status.get(i));
         }
-        System.out.println("Please enter the index of the node you want to " + action +  ": ");
+        System.out.println("Please enter the index of the node you want to " + action + ": ");
     }
 
     private static void createOrJoinRing() throws ConnectToNodeException {
@@ -87,6 +94,16 @@ public class Chord {
 
             // Construct a Node instance by passing address and port number
             Node node = new Node(localIpAddress, portNum);
+
+            // Check if the id clashes with existing nodes
+            if (existingRingArgs.length() != 0) {
+                for (int i = 0; i < nodeList.size(); i++) {
+                    if (status.get(i).equals("ALIVE") && nodeList.get(i).getId() == node.getId()) {
+                        System.out.println("The hashed id already exists. Perhaps try a different port?\n");
+                        return;
+                    }
+                }
+            } 
 
             // Find isa of contact node
             // If user hits enter, the contact node is the node itself. So get isa of the
@@ -160,13 +177,49 @@ public class Chord {
         }
     }
 
+    private static void simulateQueryTime() {
+        Random rand = new Random();
+        if (nodeList.size() == 0) {
+            System.out.println("You have not created any node. Now going back to menu.");
+            return;
+        }
+        System.out.println("Simulating random queries for " + NUM_SIMULATION + " times.");
+        long total_time = 0;
+        int count = 0;
+        while (count < NUM_SIMULATION) {
+            int rand_node = rand.nextInt(nodeList.size());
+            String rand_key = rand.ints('a', 'z').limit(10)
+                    .collect(StringBuilder::new, StringBuilder::appendCodePoint, StringBuilder::append)
+                    .toString();
+            long rand_id = Util.hashing(rand_key);
+
+            long start = System.nanoTime();
+            Message.requestFindSuccessor(rand_id, nodeList.get(rand_node).getIsa());
+            long end = System.nanoTime();
+
+            total_time += end - start;
+            count++;
+            try {
+                Thread.sleep(5);
+            } catch (InterruptedException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            }
+        }
+        double avg_time = Double.valueOf(total_time) / NUM_SIMULATION;
+        System.out.println("Simulation completed.");
+        System.out.println("Average query time is " + avg_time + " nano seconds");
+        System.out.println("\n");        
+    }
+
     private static void printMenu() {
         System.out.println("Please choose one of the following options:");
         System.out.println("1 - Create/Join a Chord Ring");
         System.out.println("2 - Check information");
         System.out.println("3 - Query");
         System.out.println("4 - Stop a node");
-        System.out.println("5 - Exit");
+        System.out.println("5 - Run query simulation");
+        System.out.println("6 - Exit");
     }
 
 }
