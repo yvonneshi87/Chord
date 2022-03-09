@@ -120,22 +120,19 @@ public class Node {
                 continue;
             }
 
-            boolean fingerIsBetter = true;
-            if (m < 0 && r < 0) {
-                // could not find a suitable entry in either, just return this node itself
-                return this.isa;
-            }
+//            if (m < 0 && r < 0) {
+//                // could not find a suitable entry in either, just return this node itself
+//                return this.isa;
+//            }
+
+            boolean fingerIsBetter;
             if (m < 0) {
                 fingerIsBetter = false;
             } else if (r < 0) {
                 fingerIsBetter = true;
             } else {
                 // Check who is closer to id
-                if (Util.isInInterval(this.id, Util.hashIsaToId(fingerTable[m]), Util.hashIsaToId(successors[r]))) {
-                    fingerIsBetter = true;
-                } else {
-                    fingerIsBetter = false;
-                }
+                fingerIsBetter = Util.isInInterval(this.id, Util.hashIsaToId(fingerTable[m]), Util.hashIsaToId(successors[r]));
             }
 
             // If the closest is not responding, then we try to find the next closest

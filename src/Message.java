@@ -78,13 +78,14 @@ public class Message {
       BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
       out.println(MessageType.NOTIFY);
       out.println(selfIp);
-      out.println(String.valueOf(selfPort));
+      out.println(selfPort);
 
       in.close();
       out.close();
       socket.close();
 
     } catch (IOException e) {
+      e.printStackTrace();
     }
   }
 
@@ -106,11 +107,7 @@ public class Message {
       out.close();
       socket.close();
 
-      if (reply.equals("OK")) {
-        return true;
-      } else {
-        return false;
-      }
+      return reply.equals("OK");
     } catch (IOException e) {
       return false;
     }
