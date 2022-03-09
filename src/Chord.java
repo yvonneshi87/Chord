@@ -21,7 +21,9 @@ public class Chord {
         System.out.println("Welcome to the Chord P2P network!");
         printMenu();
         Scanner scanner = new Scanner(System.in);
+
         int option = scanner.nextInt();
+
         try {
             while (option != 6) {
                 System.out.println("\n");
@@ -76,7 +78,7 @@ public class Chord {
         System.out.println("Nodes you have created: ");
         for (int i = 0; i < nodeList.size(); i++) {
             Node node = nodeList.get(i);
-            System.out.println("Node " + i + " - isa: " + node.getIsa() + " " + status.get(i));
+            System.out.println("Node " + i + " - isa: " + node.getIsa().toString().split("/")[1] + " " + status.get(i));
         }
         System.out.println("Please enter the index of the node you want to " + action + ": ");
     }
