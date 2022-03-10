@@ -128,7 +128,7 @@ public class Chord {
     }
 
     private static void query() {
-        System.out.println("Please enter the key you want to search: ");
+        System.out.println("Please enter the key you want to search for: ");
         Scanner scanner = new Scanner(System.in);
         String key = scanner.nextLine();
         Long id = Util.hashing(key);
