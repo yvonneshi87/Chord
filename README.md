@@ -24,7 +24,7 @@
 #### (1)Open terminal and direct yourself to the source code directory by using the command:<br/>
    $ cd Chord/src<br/>
 #### (2) Compile code by using the command:<br/>
-   $ javac *.java Exceptions/*.java<br/>
+   $ javac \*.java Exceptions/\*.java<br/>
 #### (3) Run the program by using the command:<br/>
    $ java Chord<br/>
 #### (4) If you see a dialog as bellows prompting you to pick an option, you have successfully started this application.<br/>
